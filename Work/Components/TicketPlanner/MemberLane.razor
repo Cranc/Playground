@@ -11,7 +11,7 @@
 			</div>
 			<div class="capacity-row">
 				<div class="progress-wrap">
-					<DxProgressBar Value="@Percent" Min="0" Max="100" ShowValue="false" ShowIcon="false" CssClass="member-progress" Size="Auto" SizeMode="SizeMode.Large" SetSuccessStatusOnComplete="false"/>
+					<DxProgressBar Value="@Percent" Min="0" Max="100" ShowValue="false" ShowIcon="false" ShowLabel="false" CssClass="member-progress" Size="Auto" SizeMode="SizeMode.Large" SetSuccessStatusOnComplete="false"/>
 				</div>
 				<div class="capacity-text">@AssignedHours / @Member.MonthlyCapacityHours<h6 class="visually-hidden">hours</h6></div>
 			</div>
@@ -24,10 +24,11 @@
 			<div class="assigned-ticket-row">
 			@foreach (var at in AssignedTickets)
 			{
-				<div class="assigned-ticket">
+				<div class="assigned-ticket" draggable="true" ondragstart="event.dataTransfer.setData('text/plain', JSON.stringify({ticketId:'@at.Id', sourceMemberId:'@Member.Id'}))">
 					<span class="ticket-key">@at.Key</span>
 					<span class="ticket-type badge @GetTypeClass(at.Type)">@at.Type</span>
 					<span class="ticket-hours">@($"{at.EstimatedHours}h")</span>
+					<button class="btn-unassign" @onclick="() => OnUnassign.InvokeAsync(at.Id)" type="button" aria-label="Remove">×</button>
 				</div>
 			}
 			</div>
@@ -54,6 +55,9 @@
 
 	[Parameter]
 	public int DangerThreshold { get; set; } = 100;
+
+	[Parameter]
+	public EventCallback<string> OnUnassign { get; set; }
 
 	int Percent => Member.MonthlyCapacityHours <= 0 ? 0 : (int)Math.Round((double)(AssignedHours / Member.MonthlyCapacityHours) * 100.0);
 

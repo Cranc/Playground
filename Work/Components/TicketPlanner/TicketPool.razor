@@ -57,7 +57,7 @@
 		<div class="member-lanes">
 			@foreach (var m in _members)
 			{
-				<MemberLane Member="m" AssignedTickets="GetAssignedTickets(m.Id)" AssignedHours="GetAssignedHours(m.Id)" />
+				<MemberLane Member="m" AssignedTickets="GetAssignedTickets(m.Id)" AssignedHours="GetAssignedHours(m.Id)" OnUnassign="(ticketId) => HandleUnassign(m.Id, ticketId)" />
 			}
 		</div>
 	</div>
@@ -141,9 +141,16 @@
 	}
 
 	[JSInvokable]
-	public Task OnDropFromJs(string memberId, string ticketId)
+	public Task OnDropFromJs(string memberId, string ticketId, string? sourceMemberId = null)
 	{
-		// find ticket in snapshot (original details)
+		// If sourceMemberId provided, it's a move between lanes
+		if (!string.IsNullOrEmpty(sourceMemberId) && sourceMemberId != memberId)
+		{
+			HandleMoveAssignment(sourceMemberId, memberId, ticketId);
+			return Task.CompletedTask;
+		}
+
+		// Otherwise, it's a new assignment from pool
 		var ticket = _allTicketsSnapshot.FirstOrDefault(t => t.Id == ticketId);
 		if (ticket != null)
 		{
@@ -160,6 +167,40 @@
 	{
 		var ids = _assignments.Where(a => a.MemberId == memberId).Select(a => a.TicketId).ToHashSet();
 		return _allTicketsSnapshot.Where(t => ids.Contains(t.Id));
+	}
+
+	void HandleUnassign(string memberId, string ticketId)
+	{
+		// Remove assignment
+		var assignment = _assignments.FirstOrDefault(a => a.MemberId == memberId && a.TicketId == ticketId);
+		if (assignment != null)
+		{
+			_assignments.Remove(assignment);
+		}
+		// Add ticket back to pool
+		var ticket = _allTicketsSnapshot.FirstOrDefault(t => t.Id == ticketId);
+		if (ticket != null && !_tickets.Any(t => t.Id == ticketId))
+		{
+			_tickets.Add(ticket);
+		}
+		StateHasChanged();
+	}
+
+	void HandleMoveAssignment(string sourceMemberId, string targetMemberId, string ticketId)
+	{
+		// Remove from source
+		var sourceAssignment = _assignments.FirstOrDefault(a => a.MemberId == sourceMemberId && a.TicketId == ticketId);
+		if (sourceAssignment != null)
+		{
+			_assignments.Remove(sourceAssignment);
+		}
+		// Add to target
+		var ticket = _allTicketsSnapshot.FirstOrDefault(t => t.Id == ticketId);
+		if (ticket != null)
+		{
+			_assignments.Add(new PlannerAssignment { MemberId = targetMemberId, TicketId = ticketId, PlannedHours = ticket.EstimatedHours });
+		}
+		StateHasChanged();
 	}
 
 	void Testclick()
