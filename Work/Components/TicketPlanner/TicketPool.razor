@@ -1,0 +1,99 @@
+@using Work.Components.TicketPlanner.Models
+@using Work.Components.TicketPlanner.Services
+@inject ITicketService TicketService
+
+<div class="ticket-pool">
+	<div class="ticket-pool-sidebar">
+		<DxTextBox @bind-Text="SearchText" Placeholder="Search tickets..." CssClass="search-box" NullText="Enter Search text" />
+		<div class="filters">
+			<DxComboBox Data="AvailableTypes" @bind-Value="SelectedType" CssClass="filter-box" NullText="Types" />
+			<DxComboBox Data="AvailablePriorities" @bind-Value="SelectedPriority" CssClass="filter-box" NullText="Prioryties" />
+		</div>
+		<div class="ticket-list">
+			@foreach (var t in FilteredTickets)
+			{
+				<div class="ticket-card" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','@t.Id')">
+					<div class="card-header">
+						<div class="ticket-key">@t.Key</div>
+						<div class="ticket-type badge @GetTypeClass(t.Type)">@t.Type</div>
+					</div>
+					<div class="card-title">@t.Title</div>
+					<div class="card-meta">
+						<span class="priority-dot @GetPriorityClass(t.Priority)"></span>
+						<span class="priority-text">@t.Priority</span>
+						<span class="status-text">• @t.Status</span>
+						<span class="hours">@($"{t.EstimatedHours}h")</span>
+					</div>
+				</div>
+			}
+		</div>
+	</div>
+	<div class="ticket-pool-main">
+		<h3>Team Capacity (placeholder)</h3>
+		<div class="placeholder-area">Drag tickets here to assign (drop targets implemented later).</div>
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public IEnumerable<PlannerTicket>? Tickets { get; set; }
+
+	[Parameter]
+	public EventCallback<string> OnTicketDragStart { get; set; }
+
+	string SearchText { get; set; } = string.Empty;
+	string? SelectedType { get; set; }
+	string? SelectedPriority { get; set; }
+
+	List<PlannerTicket> _tickets = new();
+
+	IEnumerable<PlannerTicket> FilteredTickets => _tickets
+		.Where(t => string.IsNullOrWhiteSpace(SearchText) || t.Title.Contains(SearchText, StringComparison.OrdinalIgnoreCase) || t.Key.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+		.Where(t => string.IsNullOrEmpty(SelectedType) || t.Type == SelectedType)
+		.Where(t => string.IsNullOrEmpty(SelectedPriority) || t.Priority == SelectedPriority);
+
+	IEnumerable<string> AvailableTypes => _tickets
+			.Select(t => t.Type)
+			.Where(t => !string.IsNullOrWhiteSpace(t))
+			.Distinct();
+
+	IEnumerable<string> AvailablePriorities => _tickets
+			.Select(t => t.Priority)
+			.Where(p => !string.IsNullOrWhiteSpace(p))
+			.Distinct();
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (Tickets != null)
+		{
+			_tickets = Tickets.ToList();
+			var test = _tickets.Select(t => t.Type).Distinct();
+		}
+		else
+		{
+			var data = await TicketService.GetTicketsAsync();
+			_tickets = data.ToList();
+		}
+	}
+
+	// Drag data is set using inline JavaScript on the element's 'ondragstart' attribute so
+	// the browser DataTransfer contains the ticket id for later drop targets.
+
+	string GetTypeClass(string type) => type.ToLowerInvariant() switch
+	{
+		"feature" => "type-feature",
+		"bug" => "type-bug",
+		"task" => "type-task",
+		"spike" => "type-spike",
+		_ => "type-default"
+	};
+
+	string GetPriorityClass(string p) => p.ToLowerInvariant() switch
+	{
+		"low" => "priority-low",
+		"medium" => "priority-medium",
+		"high" => "priority-high",
+		"critical" => "priority-critical",
+		_ => "priority-default"
+	};
+}

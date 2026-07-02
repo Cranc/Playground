@@ -1,0 +1,17 @@
+@page "/ticket-planner-demo"
+@using Work.Components.TicketPlanner
+@using Work.Components.TicketPlanner.Models
+@inject Work.Components.TicketPlanner.Services.ITicketService TicketService
+
+<h2>Ticket Planner Demo</h2>
+
+<TicketPool Tickets="tickets" />
+
+@code {
+	IEnumerable<PlannerTicket> tickets = new List<PlannerTicket>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		tickets = await TicketService.GetTicketsAsync();
+	}
+}
