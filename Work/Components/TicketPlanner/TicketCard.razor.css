@@ -1,0 +1,32 @@
+.ticket-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.03);
+  padding: 0.75rem;
+  border-radius: 6px;
+  cursor: grab;
+}
+.ticket-card:active { cursor: grabbing; }
+
+/* Rote Hervorhebung, wenn EstimatedHours == 0 */
+.ticket-card.no-hours {
+  background: rgba(255,92,92,0.12);
+  border-color: rgba(255,92,92,0.14);
+  box-shadow: 0 0 0 4px rgba(255,92,92,0.02);
+}
+
+.card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem; }
+.ticket-key { font-size: 0.75rem; color: #9aa3b2; }
+.ticket-type.badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; }
+.card-title { font-weight:600; margin-bottom:0.5rem; }
+.card-meta { display:flex; gap:0.5rem; align-items:center; font-size:0.85rem; color:#b8c0cc; }
+.priority-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+.priority-low { background:#9bd0a6; }
+.priority-medium { background:#f4c963; }
+.priority-high { background:#ff7a7a; }
+.priority-critical { background:#d15fff; }
+
+/* Typ-Badges */
+.type-feature { background:#6b5cff; color:white; }
+.type-bug { background:#ff5c7a; color:white; }
+.type-task { background:#00d3a7; color:white; }
+.type-spike { background:#ffd66b; color:black; }

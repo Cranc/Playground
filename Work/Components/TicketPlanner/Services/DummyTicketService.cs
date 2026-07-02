@@ -12,7 +12,7 @@ public class DummyTicketService : ITicketService
     {
       new PlannerTicket { Id = "1", Key = "PROJ-102", Title = "Dashboard analytics redesign", Type = "Feature", Priority = "High", Status = "Ready", EstimatedHours = 16 },
       new PlannerTicket { Id = "2", Key = "PROJ-103", Title = "API rate limiting implementation", Type = "Task", Priority = "High", Status = "Backlog", EstimatedHours = 12 },
-      new PlannerTicket { Id = "3", Key = "PROJ-104", Title = "Onboarding flow user research", Type = "Spike", Priority = "Medium", Status = "Ready", EstimatedHours = 8 },
+      new PlannerTicket { Id = "3", Key = "PROJ-104", Title = "Onboarding flow user research", Type = "Spike", Priority = "Medium", Status = "Ready", EstimatedHours = 0 },
       new PlannerTicket { Id = "4", Key = "PROJ-105", Title = "CSV export UTF-8 encoding bug", Type = "Bug", Priority = "Medium", Status = "Backlog", EstimatedHours = 4 },
       new PlannerTicket { Id = "5", Key = "PROJ-106", Title = "Dark mode token system", Type = "Feature", Priority = "Medium", Status = "Ready", EstimatedHours = 20 },
       new PlannerTicket { Id = "6", Key = "PROJ-107", Title = "Payment webhook retry logic", Type = "Task", Priority = "High", Status = "Ready", EstimatedHours = 10 },

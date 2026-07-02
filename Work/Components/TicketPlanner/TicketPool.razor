@@ -14,19 +14,7 @@
 		<div class="ticket-list">
 			@foreach (var t in FilteredTickets)
 			{
-				<div class="ticket-card" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','@t.Id')">
-					<div class="card-header">
-						<div class="ticket-key">@t.Key</div>
-						<div class="ticket-type badge @GetTypeClass(t.Type)">@t.Type</div>
-					</div>
-					<div class="card-title">@t.Title</div>
-					<div class="card-meta">
-						<span class="priority-dot @GetPriorityClass(t.Priority)"></span>
-						<span class="priority-text">@t.Priority</span>
-						<span class="status-text">• @t.Status</span>
-						<span class="hours">@($"{t.EstimatedHours}h")</span>
-					</div>
-				</div>
+				<TicketCard Ticket="t" OnDragStart="OnTicketDragStart" />
 			}
 		</div>
 	</div>
