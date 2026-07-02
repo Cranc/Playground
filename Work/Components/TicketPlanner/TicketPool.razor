@@ -1,6 +1,8 @@
 @using Work.Components.TicketPlanner.Models
 @using Work.Components.TicketPlanner.Services
+@rendermode InteractiveServer
 @inject ITicketService TicketService
+@inject IJSRuntime JS
 
 <div class="ticket-pool">
 	<div class="ticket-pool-sidebar">
@@ -29,8 +31,35 @@
 		</div>
 	</div>
 	<div class="ticket-pool-main">
-		<h3>Team Capacity (placeholder)</h3>
-		<div class="placeholder-area">Drag tickets here to assign (drop targets implemented later).</div>
+		<div class="team-capacity-header">
+			<div>
+				<h3>TEAM CAPACITY</h3>
+				<div class="team-capacity-sub">@(_members.Count) members · @GetTotalAssignedHours()h total sprint capacity</div>
+			</div>
+			<div class="add-member">
+				<DxButton class="btn btn-success btn-sm" @onclick="ShowAddMember">+ Add Member</DxButton>
+			</div>
+		</div>
+
+		@if (_showAddMember)
+		{
+			<div class="add-member-form">
+				<input class="form-control form-control-sm" placeholder="Display name" @bind="_newMemberName" />
+				<input class="form-control form-control-sm mt-1" placeholder="Role" @bind="_newMemberRole" />
+				<input class="form-control form-control-sm mt-1" placeholder="Capacity hours" type="number" @bind="_newMemberCapacity" />
+				<div class="mt-1">
+					<DxButton class="btn btn-primary btn-sm" @onclick="AddMember">Add</DxButton>
+					<DxButton class="btn btn-secondary btn-sm ms-2" @onclick="HideAddMember">Cancel</DxButton>
+				</div>
+			</div>
+		}
+
+		<div class="member-lanes">
+			@foreach (var m in _members)
+			{
+				<MemberLane Member="m" AssignedTickets="GetAssignedTickets(m.Id)" AssignedHours="GetAssignedHours(m.Id)" />
+			}
+		</div>
 	</div>
 </div>
 
@@ -46,38 +75,146 @@
 	string? SelectedPriority { get; set; }
 
 	List<PlannerTicket> _tickets = new();
+	List<PlannerTicket> _allTicketsSnapshot = new();
+
+	List<PlannerMember> _members = new();
+	List<PlannerAssignment> _assignments = new();
+
+	// Add member form state
+	bool _showAddMember = false;
+	string _newMemberName = string.Empty;
+	string _newMemberRole = string.Empty;
+	decimal _newMemberCapacity = 40;
+
+	private DotNetObjectReference<TicketPool>? _dotNetRef;
 
 	IEnumerable<PlannerTicket> FilteredTickets => _tickets
-		.Where(t => string.IsNullOrWhiteSpace(SearchText) || t.Title.Contains(SearchText, StringComparison.OrdinalIgnoreCase) || t.Key.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
-		.Where(t => string.IsNullOrEmpty(SelectedType) || t.Type == SelectedType)
-		.Where(t => string.IsNullOrEmpty(SelectedPriority) || t.Priority == SelectedPriority);
+			.Where(t => string.IsNullOrWhiteSpace(SearchText) || t.Title.Contains(SearchText, StringComparison.OrdinalIgnoreCase) || t.Key.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+			.Where(t => string.IsNullOrEmpty(SelectedType) || t.Type == SelectedType)
+			.Where(t => string.IsNullOrEmpty(SelectedPriority) || t.Priority == SelectedPriority);
 
 	IEnumerable<string> AvailableTypes => _tickets
-			.Select(t => t.Type)
-			.Where(t => !string.IsNullOrWhiteSpace(t))
-			.Distinct();
+					.Select(t => t.Type)
+					.Where(t => !string.IsNullOrWhiteSpace(t))
+					.Distinct();
 
 	IEnumerable<string> AvailablePriorities => _tickets
-			.Select(t => t.Priority)
-			.Where(p => !string.IsNullOrWhiteSpace(p))
-			.Distinct();
+					.Select(t => t.Priority)
+					.Where(p => !string.IsNullOrWhiteSpace(p))
+					.Distinct();
 
 	protected override async Task OnInitializedAsync()
 	{
 		if (Tickets != null)
 		{
 			_tickets = Tickets.ToList();
-			var test = _tickets.Select(t => t.Type).Distinct();
+			_allTicketsSnapshot = _tickets.Select(t => new PlannerTicket { Id = t.Id, Key = t.Key, Title = t.Title, Type = t.Type, Priority = t.Priority, Status = t.Status, EstimatedHours = t.EstimatedHours }).ToList();
 		}
 		else
 		{
 			var data = await TicketService.GetTicketsAsync();
 			_tickets = data.ToList();
+			// keep snapshot for assigned ticket lookup after removal from pool
+			_allTicketsSnapshot = _tickets.Select(t => new PlannerTicket { Id = t.Id, Key = t.Key, Title = t.Title, Type = t.Type, Priority = t.Priority, Status = t.Status, EstimatedHours = t.EstimatedHours }).ToList();
+		}
+
+		// initial members
+		_members = new List<PlannerMember>
+				{
+						new PlannerMember { Id = "m1", DisplayName = "Alex Kim", Role = "Frontend Dev", MonthlyCapacityHours = 40, Color = "#00D3A7" },
+						new PlannerMember { Id = "m2", DisplayName = "Sara Müller", Role = "UX Designer", MonthlyCapacityHours = 40, Color = "#6B5CFF" },
+						new PlannerMember { Id = "m3", DisplayName = "Jordan Lee", Role = "Backend Dev", MonthlyCapacityHours = 32, Color = "#FF5C7A" }
+				};
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			// Create a DotNetObjectReference for this component instance (required for server-side interactive JS interop)
+			_dotNetRef = DotNetObjectReference.Create(this);
+			foreach (var m in _members)
+			{
+				await JS.InvokeVoidAsync("ticketPlanner.registerDropZone", $"member-{m.Id}", _dotNetRef, m.Id);
+			}
 		}
 	}
 
-	// Drag data is set using inline JavaScript on the element's 'ondragstart' attribute so
-	// the browser DataTransfer contains the ticket id for later drop targets.
+	[JSInvokable]
+	public Task OnDropFromJs(string memberId, string ticketId)
+	{
+		// find ticket in snapshot (original details)
+		var ticket = _allTicketsSnapshot.FirstOrDefault(t => t.Id == ticketId);
+		if (ticket != null)
+		{
+			_assignments.Add(new PlannerAssignment { MemberId = memberId, TicketId = ticketId, PlannedHours = ticket.EstimatedHours });
+			// remove from pool if present
+			var inPool = _tickets.FirstOrDefault(t => t.Id == ticketId);
+			if (inPool != null) _tickets.Remove(inPool);
+			StateHasChanged();
+		}
+		return Task.CompletedTask;
+	}
+
+	IEnumerable<PlannerTicket> GetAssignedTickets(string memberId)
+	{
+		var ids = _assignments.Where(a => a.MemberId == memberId).Select(a => a.TicketId).ToHashSet();
+		return _allTicketsSnapshot.Where(t => ids.Contains(t.Id));
+	}
+
+	void Testclick()
+	{
+		Console.WriteLine("Test click");
+	}
+
+	void ShowAddMember()
+	{
+		_showAddMember = true;
+	}
+	void HideAddMember() { _showAddMember = false; _newMemberName = string.Empty; _newMemberRole = string.Empty; _newMemberCapacity = 40; }
+
+	async Task AddMember()
+	{
+		if (string.IsNullOrWhiteSpace(_newMemberName)) return;
+		var id = "m" + (_members.Count + 1).ToString();
+		var member = new PlannerMember { Id = id, DisplayName = _newMemberName, Role = _newMemberRole, MonthlyCapacityHours = _newMemberCapacity, Color = "#00D3A7" };
+		_members.Add(member);
+		_showAddMember = false;
+		// register new drop zone for the added member (server interactive scenario)
+		if (_dotNetRef != null)
+		{
+			await JS.InvokeVoidAsync("ticketPlanner.registerDropZone", $"member-{member.Id}", _dotNetRef, member.Id);
+		}
+		StateHasChanged();
+	}
+
+	decimal GetAssignedHours(string memberId) => _assignments.Where(a => a.MemberId == memberId).Sum(a => a.PlannedHours);
+
+	int GetCapacityPercentInt(PlannerMember m)
+	{
+		if (m.MonthlyCapacityHours <= 0) return 0;
+		var p = (double)(GetAssignedHours(m.Id) / m.MonthlyCapacityHours) * 100.0;
+		if (p < 0) p = 0; if (p > 100) p = 100;
+		return (int)Math.Round(p);
+	}
+
+	public ValueTask DisposeAsync()
+	{
+		_dotNetRef?.Dispose();
+		return ValueTask.CompletedTask;
+	}
+
+	string GetCapacityPercent(PlannerMember m) => GetCapacityPercentInt(m) + "%";
+
+	string GetInitials(string name)
+	{
+		if (string.IsNullOrWhiteSpace(name)) return "";
+		var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+		if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpperInvariant();
+		return (parts[0][0].ToString() + parts[1][0].ToString()).ToUpperInvariant();
+	}
+
+	int GetTotalAssignedHours() => (int)_assignments.Sum(a => a.PlannedHours);
 
 	string GetTypeClass(string type) => type.ToLowerInvariant() switch
 	{

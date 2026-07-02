@@ -44,3 +44,28 @@
 .type-spike { background:#ffd66b; color:black; }
 .ticket-pool-main { flex:1; padding:1rem; }
 .placeholder-area { border:2px dashed rgba(255,255,255,0.03); height:300px; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#9aa3b2; }
+
+/* Member lanes */
+/*.team-capacity-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; }
+.team-capacity-sub { font-size:0.85rem; color:#9aa3b2; }
+.add-member-form { background:rgba(255,255,255,0.02); padding:0.5rem; border-radius:6px; margin-bottom:0.75rem; }
+.member-lanes { display:flex; flex-direction:column; gap:0.75rem; }
+.member-lane { background: rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.03); padding:0.75rem; border-radius:6px; }
+.member-header { display:flex; gap:0.75rem; align-items:center; margin-bottom:0.5rem; }
+.member-avatar { width:36px; height:36px; border-radius:6px; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; }
+.member-name { font-weight:600; }
+.member-role { font-weight:400; color:#9aa3b2; margin-left:0.5rem; font-size:0.9rem; }
+.capacity-line { display:flex; align-items:center; gap:0.5rem; }
+.capacity-bar-bg { width:260px; height:6px; background:rgba(255,255,255,0.02); border-radius:4px; overflow:hidden; }
+.capacity-bar-fill { height:100%; width:0%; transition:width 300ms ease; }
+.progress-normal .dx-progressbar-range { background-color: var(--bs-success); }
+.progress-warning .dx-progressbar-range { background-color: #f4c963; }
+.progress-danger .dx-progressbar-range { background-color: #ff5c7a; }
+.capacity-text { margin-left:auto; color:#00D3A7; font-weight:600; }
+.assigned-tickets { display:flex; gap:0.5rem; flex-wrap:wrap; padding-top:0.5rem; }
+.assigned-ticket-row { display:flex; gap:0.5rem; flex-wrap:wrap; }
+.assigned-ticket { background: rgba(255,255,255,0.02); padding:0.4rem 0.6rem; border-radius:6px; border:1px solid rgba(255,255,255,0.03); display:flex; gap:0.5rem; align-items:center; }
+.ticket-key { font-weight:600; color:#9bd0a6; font-size:0.85rem; }
+.ticket-type.badge { margin-left:0.25rem; font-size:0.7rem; padding:0.15rem 0.4rem; }
+.ticket-hours { margin-left:0.5rem; color:#9aa3b2; font-size:0.8rem; }
+.lane-empty { color:#9aa3b2; }*/

@@ -1,0 +1,72 @@
+@using Work.Components.TicketPlanner.Models
+@using DevExpress.Blazor
+
+<div id="member-@Member.Id" class="member-lane">
+	<div class="member-header-row">
+		<div class="member-avatar" style="background:@Member.Color">@GetInitials(Member.DisplayName)</div>
+		<div class="member-main">
+			<div class="member-title">
+				<span class="member-name">@Member.DisplayName</span>
+				<span class="member-role">@Member.Role</span>
+			</div>
+			<div class="capacity-row">
+				<div class="progress-wrap @ProgressCssClass">
+					<DxProgressBar Value="@Percent" Min="0" Max="100" ShowValue="false" CssClass="member-progress" />
+				</div>
+				<div class="capacity-text">@AssignedHours / @Member.MonthlyCapacityHours<h6 class="visually-hidden">hours</h6></div>
+			</div>
+		</div>
+	</div>
+
+	<div class="assigned-tickets">
+		@if (AssignedTickets != null && AssignedTickets.Any())
+		{
+			<div class="assigned-ticket-row">
+			@foreach (var at in AssignedTickets)
+			{
+				<div class="assigned-ticket">
+					<span class="ticket-key">@at.Key</span>
+					<span class="ticket-type badge @GetTypeClass(at.Type)">@at.Type</span>
+					<span class="ticket-hours">@($"{at.EstimatedHours}h")</span>
+				</div>
+			}
+			</div>
+		}
+		else
+		{
+			<div class="lane-empty">Drag tickets here to assign</div>
+		}
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public PlannerMember Member { get; set; } = new();
+
+	[Parameter]
+	public IEnumerable<PlannerTicket> AssignedTickets { get; set; } = Enumerable.Empty<PlannerTicket>();
+
+	[Parameter]
+	public decimal AssignedHours { get; set; }
+
+	int Percent => Member.MonthlyCapacityHours <= 0 ? 0 : (int)Math.Round((double)(AssignedHours / Member.MonthlyCapacityHours) * 100.0);
+
+	string ProgressCssClass => Percent >= 100 ? "progress-danger" : (Percent >= 80 ? "progress-warning" : "progress-normal");
+
+	string GetInitials(string name)
+	{
+		if (string.IsNullOrWhiteSpace(name)) return "";
+		var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+		if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpperInvariant();
+		return (parts[0][0].ToString() + parts[1][0].ToString()).ToUpperInvariant();
+	}
+
+	string GetTypeClass(string type) => type.ToLowerInvariant() switch
+	{
+		"feature" => "type-feature",
+		"bug" => "type-bug",
+		"task" => "type-task",
+		"spike" => "type-spike",
+		_ => "type-default"
+	};
+}
