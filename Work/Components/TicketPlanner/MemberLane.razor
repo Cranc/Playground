@@ -1,5 +1,6 @@
 @using Work.Components.TicketPlanner.Models
 @using DevExpress.Blazor
+@inject IJSRuntime JS
 
 <div id="member-@Member.Id" class="member-lane">
 	<div class="member-header-row">
@@ -59,7 +60,19 @@
 	[Parameter]
 	public EventCallback<string> OnUnassign { get; set; }
 
+	[Parameter]
+	public object? DotNetRef { get; set; }
+
 	int Percent => Member.MonthlyCapacityHours <= 0 ? 0 : (int)Math.Round((double)(AssignedHours / Member.MonthlyCapacityHours) * 100.0);
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		// Register this lane as a drop zone when the component is rendered
+		if (DotNetRef != null)
+		{
+			await JS.InvokeVoidAsync("ticketPlanner.registerDropZone", $"member-{Member.Id}", DotNetRef, Member.Id);
+		}
+	}
 
 	string GetInitials(string name)
 	{

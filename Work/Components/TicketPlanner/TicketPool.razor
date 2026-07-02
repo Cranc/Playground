@@ -49,7 +49,7 @@
 		<div class="member-lanes">
 			@foreach (var m in _members)
 			{
-				<MemberLane Member="m" AssignedTickets="GetAssignedTickets(m.Id)" AssignedHours="GetAssignedHours(m.Id)" OnUnassign="(ticketId) => HandleUnassign(m.Id, ticketId)" />
+				<MemberLane Member="m" AssignedTickets="GetAssignedTickets(m.Id)" AssignedHours="GetAssignedHours(m.Id)" OnUnassign="(ticketId) => HandleUnassign(m.Id, ticketId)" DotNetRef="_dotNetRef" />
 			}
 		</div>
 	</div>
@@ -94,6 +94,8 @@
 
 	protected override async Task OnInitializedAsync()
 	{
+		_dotNetRef = DotNetObjectReference.Create(this);
+
 		if (Tickets != null)
 		{
 			_tickets = Tickets.ToList();
@@ -120,12 +122,7 @@
 	{
 		if (firstRender)
 		{
-			// Create a DotNetObjectReference for this component instance (required for server-side interactive JS interop)
-			_dotNetRef = DotNetObjectReference.Create(this);
-			foreach (var m in _members)
-			{
-				await JS.InvokeVoidAsync("ticketPlanner.registerDropZone", $"member-{m.Id}", _dotNetRef, m.Id);
-			}
+
 		}
 	}
 
@@ -217,12 +214,14 @@
 		member.Id = id;
 		_members.Add(member);
 		_showAddMember = false;
-		// register new drop zone for the added member (server interactive scenario)
+		// ensure the new member markup is rendered before registering the drop zone
+		await InvokeAsync(StateHasChanged);
+		// small delay to allow DOM to update on the client
+		await Task.Delay(50);
 		if (_dotNetRef != null)
 		{
 			await JS.InvokeVoidAsync("ticketPlanner.registerDropZone", $"member-{member.Id}", _dotNetRef, member.Id);
 		}
-		StateHasChanged();
 	}
 
 	decimal GetAssignedHours(string memberId) => _assignments.Where(a => a.MemberId == memberId).Sum(a => a.PlannedHours);

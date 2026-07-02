@@ -2,8 +2,14 @@ window.ticketPlanner = {
   registerDropZone: function (elementId, dotNetRef, memberId) {
     const el = document.getElementById(elementId);
     if (!el) return;
-    el.addEventListener('dragover', function (e) { e.preventDefault(); });
-    el.addEventListener('drop', function (e) {
+
+    // Guard: avoid duplicate registrations for the same element
+    if (el._ticketPlannerRegistered) return;
+    el._ticketPlannerRegistered = true;
+
+    function onDragOver(e) { e.preventDefault(); }
+
+    function onDrop(e) {
       e.preventDefault();
       const data = e.dataTransfer.getData('text/plain');
       if (!data) return;
@@ -21,6 +27,9 @@ window.ticketPlanner = {
 
       // Plain ticketId from pool
       dotNetRef.invokeMethodAsync('OnDropFromJs', memberId, data, null);
-    });
+    }
+
+    el.addEventListener('dragover', onDragOver);
+    el.addEventListener('drop', onDrop);
   }
 };
