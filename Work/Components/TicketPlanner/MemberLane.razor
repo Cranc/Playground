@@ -10,8 +10,8 @@
 				<span class="member-role">@Member.Role</span>
 			</div>
 			<div class="capacity-row">
-				<div class="progress-wrap @ProgressCssClass">
-					<DxProgressBar Value="@Percent" Min="0" Max="100" ShowValue="false" CssClass="member-progress" />
+				<div class="progress-wrap">
+					<DxProgressBar Value="@Percent" Min="0" Max="100" ShowValue="false" ShowIcon="false" CssClass="member-progress" Size="Auto" SizeMode="SizeMode.Large" SetSuccessStatusOnComplete="false"/>
 				</div>
 				<div class="capacity-text">@AssignedHours / @Member.MonthlyCapacityHours<h6 class="visually-hidden">hours</h6></div>
 			</div>
@@ -49,9 +49,13 @@
 	[Parameter]
 	public decimal AssignedHours { get; set; }
 
-	int Percent => Member.MonthlyCapacityHours <= 0 ? 0 : (int)Math.Round((double)(AssignedHours / Member.MonthlyCapacityHours) * 100.0);
+	[Parameter]
+	public int WarningThreshold { get; set; } = 80;
 
-	string ProgressCssClass => Percent >= 100 ? "progress-danger" : (Percent >= 80 ? "progress-warning" : "progress-normal");
+	[Parameter]
+	public int DangerThreshold { get; set; } = 100;
+
+	int Percent => Member.MonthlyCapacityHours <= 0 ? 0 : (int)Math.Round((double)(AssignedHours / Member.MonthlyCapacityHours) * 100.0);
 
 	string GetInitials(string name)
 	{

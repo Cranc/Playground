@@ -11,11 +11,9 @@
 .member-role { font-weight:400; color:#9aa3b2; font-size:0.9rem; }
 .capacity-row { display:flex; align-items:center; gap:0.75rem; }
 .progress-wrap { flex:1; }
-.member-progress .dx-progressbar-range { height:6px; border-radius:4px; }
+.member-progress { width:100%; }
+.member-progress .dxbl-progress-bar-indicator { height:12px; border-radius:4px; transition: background-color 300ms ease; }
 .capacity-text { color:#00D3A7; font-weight:600; margin-left:0.5rem; }
-.progress-normal .dx-progressbar-range { background-color: var(--bs-success); }
-.progress-warning .dx-progressbar-range { background-color: #f4c963; }
-.progress-danger .dx-progressbar-range { background-color: #ff5c7a; }
 .assigned-tickets { display:flex; gap:0.5rem; flex-wrap:wrap; padding-top:0.5rem; }
 .assigned-ticket-row { display:flex; gap:0.5rem; flex-wrap:wrap; }
 .assigned-ticket { background: rgba(255,255,255,0.02); padding:0.4rem 0.6rem; border-radius:6px; border:1px solid rgba(255,255,255,0.03); display:flex; gap:0.5rem; align-items:center; }
@@ -23,3 +21,7 @@
 .ticket-type.badge { margin-left:0.25rem; font-size:0.7rem; padding:0.15rem 0.4rem; }
 .ticket-hours { margin-left:0.5rem; color:#9aa3b2; font-size:0.8rem; }
 .lane-empty { color:#9aa3b2; }
+.dxbl-progress-bar {
+  width: unset !important;
+  --dxbl-progress-bar-width: unset !important;
+}
