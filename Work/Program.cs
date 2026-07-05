@@ -1,9 +1,12 @@
 using Work.Components;
 using TicketPlanner.Services;
+using WorkflowEngine.DependencyInjection;
+using Work.Workflows.Steps;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDevExpressBlazor();
+builder.Services.AddWorkflowEngine();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -13,6 +16,8 @@ builder.Services.AddRazorComponents()
 builder.Services
   .AddScoped<ITicketService, DummyTicketService>()
   .AddScoped<ITicketPlanStorageService, TicketPlanStorageService>()
+  .AddScoped<CreateUserStep>()
+  .AddScoped<FinishStep>()
   .AddLocalStorageServices();
 
 var app = builder.Build();

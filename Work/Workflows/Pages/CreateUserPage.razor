@@ -1,0 +1,42 @@
+@inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
+@using DevExpress.Blazor
+
+<div class="card p-3">
+	<h4>Neuen Benutzer anlegen</h4>
+	<div class="mb-2">
+		<DxTextBox @bind-Text="_name" NullText="Name" />
+	</div>
+	<div class="mb-2">
+		<DxTextBox @bind-Text="_email" NullText="E-Mail" />
+	</div>
+	<div class="d-flex gap-2 mt-3">
+		<DxButton CssClass="btn btn-primary" Click="CreateAsync" Enabled="@(!string.IsNullOrWhiteSpace(_name))">Benutzer erstellen</DxButton>
+		<DxButton CssClass="btn btn-secondary" Click="GoBackAsync">Zurück</DxButton>
+	</div>
+</div>
+
+@code {
+	private string? _name;
+	private string? _email;
+
+	protected override void OnInitialized()
+	{
+		if (Context.TryGet<string>("User.Name", out var existingName))
+		{
+			_name = existingName;
+		}
+
+		if (Context.TryGet<string>("User.Email", out var existingEmail))
+		{
+			_email = existingEmail;
+		}
+	}
+
+	private Task CreateAsync()
+	{
+		Context.Set("User.Name", _name);
+		Context.Set("User.Email", _email);
+		Context.Set("Wizard.Path", "CreateUser");
+		return AdvanceAsync();
+	}
+}

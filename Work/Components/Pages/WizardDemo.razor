@@ -1,0 +1,32 @@
+@page "/wizard-demo"
+@rendermode InteractiveServer
+@using WorkflowEngine
+@using WorkflowEngine.Definition
+@using WorkflowEngine.Blazor.Components
+@using Work.Workflows
+
+<PageTitle>Wizard Demo</PageTitle>
+
+<h1>User Wizard Demo</h1>
+
+<WorkflowWizard Definition="_definition" OnCompleted="OnCompletedAsync">
+	<CompletedContent>
+		<div class="alert alert-success">Workflow abgeschlossen.</div>
+		<button class="btn btn-primary" @onclick="Reset">Erneut starten</button>
+	</CompletedContent>
+</WorkflowWizard>
+
+@code {
+	private WorkflowDefinition _definition = UserWizardWorkflow.Build();
+
+	private Task OnCompletedAsync(WorkflowContext context)
+	{
+		context.Set("Wizard.CompletedAt", DateTime.UtcNow);
+		return Task.CompletedTask;
+	}
+
+	private void Reset()
+	{
+		_definition = UserWizardWorkflow.Build();
+	}
+}

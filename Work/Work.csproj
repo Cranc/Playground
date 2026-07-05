@@ -14,6 +14,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TicketPlanner\TicketPlanner.csproj" />
+    <ProjectReference Include="..\WorkflowEngine\WorkflowEngine.csproj" />
+    <ProjectReference Include="..\WorkflowEngine.Blazor\WorkflowEngine.Blazor.csproj" />
   </ItemGroup>
 
 </Project>
