@@ -10,7 +10,10 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // TicketPlanner services
-builder.Services.AddScoped<ITicketService, DummyTicketService>();
+builder.Services
+  .AddScoped<ITicketService, DummyTicketService>()
+  .AddScoped<ITicketPlanStorageService, TicketPlanStorageService>()
+  .AddLocalStorageServices();
 
 var app = builder.Build();
 

@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="TicketPlanner/TicketPlanner.csproj" Id="42ac4967-6a1b-4602-9f80-8b7945f5d736" />
   <Project Path="Work/Work.csproj" />
 </Solution>
