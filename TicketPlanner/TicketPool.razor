@@ -4,6 +4,7 @@
 @inject IJSRuntime JS
 @inject ITicketPlanStorageService PlanStorage
 
+@* Main planner surface for filtering tickets, assigning them to team members, and persisting plan state. *@
 <script src="@JavaScriptConstants.Scripts.TicketPlanner"></script>
 
 <div class="ticket-pool">
@@ -59,9 +60,15 @@
 </div>
 
 @code {
+	/// <summary>
+	/// Optional ticket source supplied by the parent. If omitted, tickets are loaded through <see cref="ITicketService"/>.
+	/// </summary>
 	[Parameter]
 	public IEnumerable<PlannerTicket>? Tickets { get; set; }
 
+	/// <summary>
+	/// Callback triggered when a ticket drag operation starts from the ticket pool.
+	/// </summary>
 	[Parameter]
 	public EventCallback<string> OnTicketDragStart { get; set; }
 
@@ -95,6 +102,9 @@
 					.Where(p => !string.IsNullOrWhiteSpace(p))
 					.Distinct();
 
+	/// <summary>
+	/// Initializes component state and creates the .NET interop reference used by drag-and-drop JavaScript handlers.
+	/// </summary>
 	protected override async Task OnInitializedAsync()
 	{
 		_dotNetRef = DotNetObjectReference.Create(this);
@@ -123,6 +133,10 @@
 		// saved state will be loaded after first render (JSInterop requires client connection)
 	}
 
+	/// <summary>
+	/// Loads persisted planner state after first render, when JS interop is available.
+	/// </summary>
+	/// <param name="firstRender">Indicates whether this is the first render cycle.</param>
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
@@ -131,6 +145,12 @@
 		}
 	}
 
+	/// <summary>
+	/// Handles drop events coming from JavaScript for assigning or moving tickets between members.
+	/// </summary>
+	/// <param name="memberId">Target member receiving the ticket.</param>
+	/// <param name="ticketId">Dropped ticket identifier.</param>
+	/// <param name="sourceMemberId">Source member when moving an existing assignment.</param>
 	[JSInvokable]
 	public async Task OnDropFromJs(string memberId, string ticketId, string? sourceMemberId = null)
 	{
@@ -155,12 +175,22 @@
 		}
 	}
 
+	/// <summary>
+	/// Returns all tickets currently assigned to the specified member.
+	/// </summary>
+	/// <param name="memberId">The member identifier.</param>
+	/// <returns>Assigned tickets for the member.</returns>
 	IEnumerable<PlannerTicket> GetAssignedTickets(string memberId)
 	{
 		var ids = _assignments.Where(a => a.MemberId == memberId).Select(a => a.TicketId).ToHashSet();
 		return _allTicketsSnapshot.Where(t => ids.Contains(t.Id));
 	}
 
+	/// <summary>
+	/// Removes a ticket assignment from a member and returns the ticket to the pool.
+	/// </summary>
+	/// <param name="memberId">The member identifier.</param>
+	/// <param name="ticketId">The ticket identifier.</param>
 	async Task HandleUnassign(string memberId, string ticketId)
 	{
 		// Remove assignment
@@ -179,6 +209,12 @@
 		await SaveStateAsync();
 	}
 
+	/// <summary>
+	/// Moves an assigned ticket from one member lane to another.
+	/// </summary>
+	/// <param name="sourceMemberId">The current assignee member identifier.</param>
+	/// <param name="targetMemberId">The destination member identifier.</param>
+	/// <param name="ticketId">The ticket identifier.</param>
 	async Task HandleMoveAssignment(string sourceMemberId, string targetMemberId, string ticketId)
 	{
 		// Remove from source
@@ -202,12 +238,18 @@
 		Console.WriteLine("Test click");
 	}
 
+	/// <summary>
+	/// Opens the add-member dialog.
+	/// </summary>
 	void ShowAddMember()
 	{
 		_showAddMember = true;
 	}
 	void HideAddMember() { _showAddMember = false; }
 
+	/// <summary>
+	/// Clears all ticket search and filter criteria.
+	/// </summary>
 	void ClearFilters()
 	{
 		SelectedType = null;
@@ -215,6 +257,10 @@
 		SearchText = string.Empty;
 	}
 
+	/// <summary>
+	/// Adds a new team member and registers the member lane as a drop zone.
+	/// </summary>
+	/// <param name="member">The member created from the add-member dialog.</param>
 	async Task HandleDialogAddMember(PlannerMember member)
 	{
 		if (member == null || string.IsNullOrWhiteSpace(member.DisplayName)) return;
@@ -244,6 +290,10 @@
 		return (int)Math.Round(p);
 	}
 
+	/// <summary>
+	/// Releases unmanaged interop references created for JavaScript callbacks.
+	/// </summary>
+	/// <returns>A completed task value.</returns>
 	public ValueTask DisposeAsync()
 	{
 		_dotNetRef?.Dispose();
@@ -280,7 +330,9 @@
 		_ => "priority-default"
 	};
 
-	// Persistence via PlanStorage service
+	/// <summary>
+	/// Persists the current members and assignments using the configured storage service.
+	/// </summary>
 	async Task SaveStateAsync()
 	{
 		try
@@ -294,6 +346,9 @@
 		}
 	}
 
+	/// <summary>
+	/// Loads a saved planner state and updates ticket pool availability accordingly.
+	/// </summary>
 	async Task LoadStateAsync()
 	{
 		try
@@ -320,6 +375,9 @@
 		}
 	}
 
+	/// <summary>
+	/// Exports the current planner state as a JSON file.
+	/// </summary>
 	async Task ExportStateAsync()
 	{
 		try
@@ -333,6 +391,10 @@
 		}
 	}
 
+	/// <summary>
+	/// Imports planner state from an uploaded JSON file and refreshes member drop zones.
+	/// </summary>
+	/// <param name="e">The uploaded file event args.</param>
 	async Task ImportFileAsync(FilesUploadingEventArgs e)
 	{
 		if (e.Files.Count == 0) return;

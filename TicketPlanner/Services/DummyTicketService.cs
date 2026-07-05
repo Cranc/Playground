@@ -4,8 +4,15 @@ using TicketPlanner.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
+/// <summary>
+/// In-memory demo implementation of <see cref="ITicketService"/> that returns sample tickets.
+/// </summary>
 public class DummyTicketService : ITicketService
 {
+  /// <summary>
+  /// Gets a predefined list of tickets used for local development and UI demos.
+  /// </summary>
+  /// <returns>A task containing sample planner tickets.</returns>
   public Task<IEnumerable<PlannerTicket>> GetTicketsAsync()
   {
     var list = new List<PlannerTicket>

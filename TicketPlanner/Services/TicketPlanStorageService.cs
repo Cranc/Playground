@@ -5,6 +5,9 @@ using TicketPlanner.Models;
 
 namespace TicketPlanner.Services;
 
+/// <summary>
+/// Persists ticket planner state in browser storage and supports JSON export.
+/// </summary>
 public class TicketPlanStorageService : ITicketPlanStorageService
 {
   const string _storageKey = "ticketPlannerState";
@@ -12,12 +15,18 @@ public class TicketPlanStorageService : ITicketPlanStorageService
   readonly ILocalStorageService _localStorage;
   private readonly IJSRuntime _jsRuntime;
 
+  /// <summary>
+  /// Creates a new storage service instance.
+  /// </summary>
+  /// <param name="localStorage">Browser local storage abstraction.</param>
+  /// <param name="jsRuntime">JavaScript runtime for file export interop.</param>
   public TicketPlanStorageService(ILocalStorageService localStorage, IJSRuntime jsRuntime)
   {
     _localStorage = localStorage;
     _jsRuntime = jsRuntime;
   }
 
+  /// <inheritdoc />
   public async Task SavePlanAsync(PlannerPlan plan)
   {
     try
@@ -31,6 +40,7 @@ public class TicketPlanStorageService : ITicketPlanStorageService
     }
   }
 
+  /// <inheritdoc />
   public async Task<PlannerPlan?> LoadPlanAsync()
   {
     try
@@ -46,6 +56,7 @@ public class TicketPlanStorageService : ITicketPlanStorageService
     }
   }
 
+  /// <inheritdoc />
   public async Task ExportPlanAsync(PlannerPlan plan, string filename = "ticketplanner.json")
   {
     try
