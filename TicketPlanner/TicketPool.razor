@@ -1,11 +1,10 @@
-@using Work.Components.TicketPlanner.Models
-@using Work.Components.TicketPlanner.Services
-@using Microsoft.AspNetCore.Components.Forms
 @using System.Text.Json
 @rendermode InteractiveServer
 @inject ITicketService TicketService
 @inject IJSRuntime JS
 @inject ITicketPlanStorageService PlanStorage
+
+<script src="@JavaScriptConstants.Scripts.TicketPlanner"></script>
 
 <div class="ticket-pool">
 	<div class="ticket-pool-sidebar">
@@ -121,14 +120,13 @@
 						new PlannerMember { Id = "m3", DisplayName = "Jordan Lee", Role = "Backend Dev", MonthlyCapacityHours = 32, Color = "#FF5C7A" }
 				};
 
-				// saved state will be loaded after first render (JSInterop requires client connection)
+		// saved state will be loaded after first render (JSInterop requires client connection)
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
 		{
-			// load saved state now that JSInterop is available
 			await LoadStateAsync();
 		}
 	}

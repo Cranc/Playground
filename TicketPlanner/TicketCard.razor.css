@@ -9,8 +9,8 @@
 
 /* Rote Hervorhebung, wenn EstimatedHours == 0 */
 .ticket-card.no-hours {
-  background: rgba(255,92,92,0.12);
-  border-color: rgba(255,92,92,0.14);
+  background: rgba(255,92,92,0.16);
+  border-color: rgba(255,92,92,0.2);
   box-shadow: 0 0 0 4px rgba(255,92,92,0.02);
 }
 

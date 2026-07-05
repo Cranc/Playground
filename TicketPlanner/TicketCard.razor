@@ -1,0 +1,57 @@
+@using TicketPlanner.Models
+@using Microsoft.AspNetCore.Components
+
+<div class="ticket-card @(Ticket.EstimatedHours == 0 ? "no-hours" : "")" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','@Ticket.Id')" @onpointerdown="@( () => OnDragStart.InvokeAsync(Ticket.Id) )">
+	<div class="card-header">
+		<div class="ticket-key">@Ticket.Key</div>
+		<div class="ticket-type badge @GetTypeClass(Ticket.Type)">@Ticket.Type</div>
+	</div>
+	<div class="card-title">@Ticket.Title</div>
+	<div class="card-meta">
+		<span class="priority-dot @GetPriorityClass(Ticket.Priority)"></span>
+		<span class="priority-text">@Ticket.Priority</span>
+		<span class="status-text">• @Ticket.Status</span>
+		<span class="hours">@($"{Ticket.EstimatedHours}h")</span>
+	</div>
+</div>
+
+@code {
+	/// <summary>
+	/// The PlannerTicket object that contains the details of the ticket to be displayed in the card. This includes properties such as Key, Type, Title, Priority, Status, and EstimatedHours. The Ticket property is used to bind the ticket data to the UI elements within the card.
+	/// </summary>
+	[Parameter]
+	public PlannerTicket Ticket { get; set; } = new();
+	/// <summary>
+	/// Event callback that is invoked when the user starts dragging the ticket card. The callback receives the ID of the ticket being dragged, allowing the parent component to handle drag-and-drop operations, such as reassigning tickets or updating their status.
+	/// </summary>
+	[Parameter]
+	public EventCallback<string> OnDragStart { get; set; }
+
+	/// <summary>
+	/// Gets the CSS class for the ticket type badge based on the ticket's type. This method maps specific ticket types (e.g., "feature", "bug", "task", "spike") to corresponding CSS classes that define their visual appearance. If the type is not recognized, a default class is returned.
+	/// </summary>
+	/// <param name="type">Type of the ticket</param>
+	/// <returns>CSS class for the given type.</returns>
+	string GetTypeClass(string type) => (type ?? "").ToLowerInvariant() switch
+	{
+		"feature" => "type-feature",
+		"bug" => "type-bug",
+		"task" => "type-task",
+		"spike" => "type-spike",
+		_ => "type-default"
+	};
+
+	/// <summary>
+	/// Gets the CSS class for the ticket priority dot based on the ticket's priority. This method maps specific priority levels (e.g., "low", "medium", "high", "critical") to corresponding CSS classes that define their visual appearance. If the priority is not recognized, a default class is returned.
+	/// </summary>
+	/// <param name="p">Priority of the Ticket.</param>
+	/// <returns>CSS class for the given priority.</returns>
+	string GetPriorityClass(string p) => (p ?? "").ToLowerInvariant() switch
+	{
+		"low" => "priority-low",
+		"medium" => "priority-medium",
+		"high" => "priority-high",
+		"critical" => "priority-critical",
+		_ => "priority-default"
+	};
+}

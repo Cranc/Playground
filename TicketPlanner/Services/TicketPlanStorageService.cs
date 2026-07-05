@@ -1,9 +1,9 @@
 using Microsoft.JSInterop;
 using System.Text.Json;
-using Work.Components.TicketPlanner.Constants;
-using Work.Components.TicketPlanner.Models;
+using TicketPlanner.Constants;
+using TicketPlanner.Models;
 
-namespace Work.Components.TicketPlanner.Services;
+namespace TicketPlanner.Services;
 
 public class TicketPlanStorageService : ITicketPlanStorageService
 {

@@ -1,6 +1,6 @@
-namespace Work.Components.TicketPlanner.Services;
+namespace TicketPlanner.Services;
 
-using Work.Components.TicketPlanner.Models;
+using TicketPlanner.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 

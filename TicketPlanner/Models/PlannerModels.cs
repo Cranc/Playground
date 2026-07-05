@@ -1,4 +1,4 @@
-﻿namespace Work.Components.TicketPlanner.Models;
+﻿namespace TicketPlanner.Models;
 
 /// <summary>
 /// Represents a ticket in the planner with its properties such as Id, Key, Title, Type, Status, Priority, and EstimatedHours.

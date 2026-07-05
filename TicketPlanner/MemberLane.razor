@@ -1,0 +1,113 @@
+@using TicketPlanner.Models
+@using DevExpress.Blazor
+@inject IJSRuntime JS
+
+<div id="member-@Member.Id" class="member-lane">
+	<div class="member-header-row">
+		<div class="member-avatar" style="background:@Member.Color">@GetInitials(Member.DisplayName)</div>
+		<div class="member-main">
+			<div class="member-title">
+				<span class="member-name">@Member.DisplayName</span>
+				<span class="member-role">@Member.Role</span>
+			</div>
+			<div class="capacity-row">
+				<div class="progress-wrap">
+					<DxProgressBar Value="@Percent" Min="0" Max="100" ShowValue="false" ShowIcon="false" ShowLabel="false" CssClass="member-progress" Size="Auto" SizeMode="SizeMode.Large" SetSuccessStatusOnComplete="false"/>
+				</div>
+				<div class="capacity-text">@AssignedHours / @Member.MonthlyCapacityHours<h6 class="visually-hidden">hours</h6></div>
+			</div>
+		</div>
+	</div>
+
+	<div class="assigned-tickets">
+		@if (AssignedTickets != null && AssignedTickets.Any())
+		{
+			<div class="assigned-ticket-row">
+			@foreach (var at in AssignedTickets)
+			{
+				<div class="assigned-ticket" draggable="true" ondragstart="event.dataTransfer.setData('text/plain', JSON.stringify({ticketId:'@at.Id', sourceMemberId:'@Member.Id'}))">
+					<span class="ticket-key">@at.Key</span>
+					<span class="ticket-type badge @GetTypeClass(at.Type)">@at.Type</span>
+					<span class="ticket-hours">@($"{at.EstimatedHours}h")</span>
+					<button class="btn-unassign" @onclick="() => OnUnassign.InvokeAsync(at.Id)" type="button" aria-label="Remove">×</button>
+				</div>
+			}
+			</div>
+		}
+		else
+		{
+			<div class="lane-empty">Drag tickets here to assign</div>
+		}
+	</div>
+</div>
+
+@code {
+	/// <summary>
+	/// Provides the details of the team member for whom this lane is being rendered. This includes information such as the member's ID, display name, role, color, and monthly capacity hours.
+	/// </summary>
+	[Parameter]
+	public PlannerMember Member { get; set; } = new();
+	/// <summary>
+	/// The collection of tickets that are currently assigned to the team member. This property is used to display the assigned tickets within the lane, allowing users to see which tasks are allocated to the member.
+	/// </summary>
+	[Parameter]
+	public IEnumerable<PlannerTicket> AssignedTickets { get; set; } = Enumerable.Empty<PlannerTicket>();
+	/// <summary>
+	/// AssignedHours represents the total number of hours that have been allocated to the team member for the current month. This value is used to calculate the percentage of capacity used and to display the assigned hours in relation to the member's monthly capacity.
+	/// </summary>
+	[Parameter]
+	public decimal AssignedHours { get; set; }
+	/// <summary>
+	/// WarningThreshold defines the percentage of the member's monthly capacity at which a warning state should be indicated. When the assigned hours exceed this threshold, the UI can visually alert users that the member is approaching their capacity limit.
+	/// </summary>
+	[Parameter]
+	public int WarningThreshold { get; set; } = 80;
+	/// <summary>
+	/// DangerThreshold defines the percentage of the member's monthly capacity at which a danger state should be indicated. When the assigned hours exceed this threshold, the UI can visually alert users that the member is over their capacity limit, prompting immediate attention or action.
+	/// </summary>
+	[Parameter]
+	public int DangerThreshold { get; set; } = 100;
+	/// <summary>
+	/// Event callback that is triggered when a ticket is unassigned from the member. The callback receives the ID of the unassigned ticket as a string parameter, allowing the parent component to handle the unassignment logic, such as updating the data model or UI accordingly.
+	/// </summary>
+	[Parameter]
+	public EventCallback<string> OnUnassign { get; set; }
+	/// <summary>
+	/// Reference to the .NET object that will handle JavaScript interop calls for drag-and-drop functionality. This parameter is used to register the member lane as a drop zone, enabling tickets to be dragged and dropped onto the lane. It allows the JavaScript code to invoke methods on the .NET side when a ticket is dropped onto this lane.
+	/// </summary>
+	[Parameter]
+	public object? DotNetRef { get; set; }
+
+	/// <summary>
+	/// Percent calculates the percentage of the member's monthly capacity that has been assigned. It is computed by dividing the AssignedHours by the Member's MonthlyCapacityHours and multiplying by 100. If the MonthlyCapacityHours is zero or less, it returns 0 to avoid division by zero errors. This value is used to visually represent how much of the member's capacity has been utilized.
+	/// </summary>
+	int Percent => Member.MonthlyCapacityHours <= 0 ? 0 : (int)Math.Round((double)(AssignedHours / Member.MonthlyCapacityHours) * 100.0);
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		// Register this lane as a drop zone when the component is rendered
+		if (DotNetRef != null)
+		{
+			await JS.InvokeVoidAsync("ticketPlanner.registerDropZone", $"member-{Member.Id}", DotNetRef, Member.Id);
+		}
+	}
+
+	string GetInitials(string name)
+	{
+		return TicketPlannerHelper.GetInitials(name);
+	}
+
+	/// <summary>
+	/// Gets the CSS class for the ticket type badge based on the provided type string. This method maps specific ticket types to corresponding CSS classes, allowing for visual differentiation of ticket types in the UI. If the type does not match any predefined cases, a default class is returned.
+	/// </summary>
+	/// <param name="type"></param>
+	/// <returns></returns>
+	string GetTypeClass(string type) => type.ToLowerInvariant() switch
+	{
+		"feature" => "type-feature",
+		"bug" => "type-bug",
+		"task" => "type-task",
+		"spike" => "type-spike",
+		_ => "type-default"
+	};
+}

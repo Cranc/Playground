@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using Work.Components.TicketPlanner.Models;
+using TicketPlanner.Models;
 
-namespace Work.Components.TicketPlanner.Services;
+namespace TicketPlanner.Services;
 
 public interface ITicketPlanStorageService
 {

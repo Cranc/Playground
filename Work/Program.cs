@@ -1,5 +1,5 @@
 using Work.Components;
-using Work.Components.TicketPlanner.Services;
+using TicketPlanner.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
