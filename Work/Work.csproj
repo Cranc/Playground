@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="wwwroot\json\DriverTourWorkflow.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="wwwroot\json\*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

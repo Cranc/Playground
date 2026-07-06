@@ -26,21 +26,21 @@ public sealed class WorkflowConfigurationLoader
   }
 
   /// <summary>Lädt eine Definition aus einem Konfigurations-String (JSON per Default-Reader).</summary>
-  public WorkflowDefinition Load(string content, IWorkflowTypeRegistry registry)
+  public WorkflowDefinition Load(string content, IWorkflowRegistry registry)
   {
     var model = _reader.Read(content);
     return _factory.Create(model, registry);
   }
 
   /// <summary>Lädt eine Definition aus einem Stream.</summary>
-  public WorkflowDefinition Load(Stream content, IWorkflowTypeRegistry registry)
+  public WorkflowDefinition Load(Stream content, IWorkflowRegistry registry)
   {
     var model = _reader.Read(content);
     return _factory.Create(model, registry);
   }
 
   /// <summary>Lädt eine Definition aus einer Datei.</summary>
-  public WorkflowDefinition LoadFromFile(string path, IWorkflowTypeRegistry registry)
+  public WorkflowDefinition LoadFromFile(string path, IWorkflowRegistry registry)
   {
     if (string.IsNullOrWhiteSpace(path))
     {

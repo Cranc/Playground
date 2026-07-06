@@ -1,0 +1,24 @@
+{
+  "name": "UserWizard",
+  "startStep": "Start",
+  "steps": [
+    { "name": "Start", "component": "StartPage" },
+    { "name": "SelectUser", "component": "SelectUserPage" },
+    {
+      "name": "CreateUser",
+      "before": "CreateUser.InitAttempts",
+      "component": "CreateUserPage",
+      "execute": "CreateUserStep",
+      "after": "CreateUser.StampLastRun"
+    },
+    { "name": "ConfigureRoles", "component": "ConfigureRolesPage" },
+    { "name": "Summary", "component": "SummaryPage" },
+    { "name": "Advanced", "component": "AdvancedPage" },
+    {
+      "name": "Finish",
+      "execute": "FinishStep",
+      "retry": 3,
+      "onException": "Finish.HandleError"
+    }
+  ]
+}

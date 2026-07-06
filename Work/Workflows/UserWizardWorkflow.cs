@@ -1,4 +1,5 @@
 using WorkflowEngine.Blazor;
+using WorkflowEngine.Configuration;
 using WorkflowEngine.Definition;
 using Work.Workflows.Pages;
 using Work.Workflows.Steps;
@@ -41,5 +42,17 @@ public static class UserWizardWorkflow
           return "Advanced";
         })
       .Build();
+  }
+
+  /// <summary>
+  /// Baut denselben Workflow wie <see cref="Build"/>, jedoch vollständig aus der externen
+  /// JSON-Konfiguration (<c>UserWizardWorkflow.json</c>) inklusive Before-/After-Aktionen,
+  /// Retry und Exception-Handler.
+  /// </summary>
+  public static WorkflowDefinition BuildFromConfig()
+  {
+    var registry = UserWizardWorkflowConfig.CreateRegistry();
+    var loader = new WorkflowConfigurationLoader();
+    return loader.LoadFromFile(UserWizardWorkflowConfig.ConfigFilePath, registry);
   }
 }

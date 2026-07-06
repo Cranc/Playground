@@ -1,13 +1,13 @@
-@page "/wizard-config-demo"
+@page "/wizard-demo"
 @rendermode InteractiveServer
 @using WorkflowEngine
 @using WorkflowEngine.Definition
 @using WorkflowEngine.Blazor.Components
 @using Work.Workflows
 
-<PageTitle>Wizard Config Demo</PageTitle>
+<PageTitle>Wizard Demo</PageTitle>
 
-<h1>User Wizard Config Demo</h1>
+<h1>User Wizard Demo</h1>
 
 <WorkflowWizard Definition="_definition" OnCompleted="OnCompletedAsync">
 	<CompletedContent>
@@ -27,6 +27,6 @@
 
 	private void Reset()
 	{
-		_definition = UserWizardWorkflow.BuildFromConfig();
+		_definition = UserWizardWorkflow.Build();
 	}
 }
