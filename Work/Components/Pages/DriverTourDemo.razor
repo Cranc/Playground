@@ -1,0 +1,79 @@
+@page "/driver-tour-demo"
+@rendermode InteractiveServer
+@using DevExpress.Blazor
+@using WorkflowEngine
+@using WorkflowEngine.Definition
+@using WorkflowEngine.Blazor.Components
+@using Work.Workflows.DriverTour
+
+<PageTitle>Fahrer-Tour Demo</PageTitle>
+
+<h1>Logistikfahrer – Tour-Workflow Demo</h1>
+
+<div class="card p-3" style="max-width: 640px;">
+	<h4>@_previewTour.Name</h4>
+	<p>@_previewTour.Stops.Count geplante Stopps mit insgesamt @_previewTour.Stops.Sum(s => s.Shipments.Count) Sendungen.</p>
+
+	<table class="table table-sm">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Stopp</th>
+				<th>Adresse</th>
+				<th>Sendungen</th>
+			</tr>
+		</thead>
+		<tbody>
+			@for (var i = 0; i < _previewTour.Stops.Count; i++)
+			{
+				var stop = _previewTour.Stops[i];
+				<tr>
+					<td>@(i + 1)</td>
+					<td>@stop.Name</td>
+					<td>@stop.Address</td>
+					<td>@stop.Shipments.Count</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+
+	<DxButton CssClass="btn btn-primary" Click="StartTour">Tour starten</DxButton>
+</div>
+
+<DxPopup @bind-Visible="@_showPopup"
+         HeaderText="Tour bearbeiten"
+         ShowFooter="false"
+         ShowCloseButton="true"
+         CloseOnOutsideClick="false"
+         ApplyBackgroundShading="true"
+         Width="640px">
+	<WorkflowWizard Definition="_definition" OnCompleted="OnCompletedAsync">
+		<CompletedContent>
+			<div class="alert alert-success">Tour abgeschlossen. Alle Sendungsdaten, Statusmeldungen, Unterschriften und Lademittelbuchungen wurden dokumentiert.</div>
+			<button class="btn btn-primary" @onclick="FinishAndClose">Fenster schließen</button>
+		</CompletedContent>
+	</WorkflowWizard>
+</DxPopup>
+
+@code {
+	private readonly Tour _previewTour = DriverTourSeedData.CreateDummyTour();
+	private WorkflowDefinition _definition = DriverTourWorkflow.Build();
+	private bool _showPopup;
+
+	private void StartTour()
+	{
+		_definition = DriverTourWorkflow.Build();
+		_showPopup = true;
+	}
+
+	private Task OnCompletedAsync(WorkflowContext context)
+	{
+		context.Set("Tour.WorkflowCompletedAtUtc", DateTime.UtcNow);
+		return Task.CompletedTask;
+	}
+
+	private void FinishAndClose()
+	{
+		_showPopup = false;
+	}
+}

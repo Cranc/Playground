@@ -2,6 +2,7 @@ using Work.Components;
 using TicketPlanner.Services;
 using WorkflowEngine.DependencyInjection;
 using Work.Workflows.Steps;
+using Work.Workflows.DriverTour.Steps;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,11 @@ builder.Services
   .AddScoped<ITicketPlanStorageService, TicketPlanStorageService>()
   .AddScoped<CreateUserStep>()
   .AddScoped<FinishStep>()
+  .AddScoped<InitializeTourStep>()
+  .AddScoped<CompleteShipmentStep>()
+  .AddScoped<CompleteBulkShipmentsStep>()
+  .AddScoped<CompleteStopStep>()
+  .AddScoped<AdvanceStopStep>()
   .AddLocalStorageServices();
 
 var app = builder.Build();
