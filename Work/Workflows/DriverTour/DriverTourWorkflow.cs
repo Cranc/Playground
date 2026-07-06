@@ -1,4 +1,5 @@
 using WorkflowEngine.Blazor;
+using WorkflowEngine.Configuration;
 using WorkflowEngine.Definition;
 using Work.Workflows.DriverTour.Pages;
 using Work.Workflows.DriverTour.Steps;
@@ -40,5 +41,17 @@ public static class DriverTourWorkflow
       .Step("TourEnd")
         .Component<TourEndPage>()
       .Build();
+  }
+
+  /// <summary>
+  /// Baut denselben Workflow wie <see cref="Build"/>, jedoch aus der externen
+  /// JSON-Konfiguration (<c>DriverTourWorkflow.json</c>). Dient als Nachweis, dass eine
+  /// komplette Definition auch deklarativ geladen werden kann.
+  /// </summary>
+  public static WorkflowDefinition BuildFromConfig()
+  {
+    var registry = DriverTourWorkflowConfig.CreateRegistry();
+    var loader = new WorkflowConfigurationLoader();
+    return loader.LoadFromFile(DriverTourWorkflowConfig.ConfigFilePath, registry);
   }
 }

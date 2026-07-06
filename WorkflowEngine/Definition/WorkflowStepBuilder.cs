@@ -46,6 +46,23 @@ public sealed class WorkflowStepBuilder
     return this;
   }
 
+  public WorkflowStepBuilder Execute(Type stepType)
+  {
+    if (stepType is null)
+    {
+      throw new ArgumentNullException(nameof(stepType));
+    }
+
+    if (!typeof(IWorkflowStep).IsAssignableFrom(stepType))
+    {
+      throw new ArgumentException($"Step-Typ '{stepType.FullName}' implementiert IWorkflowStep nicht.", nameof(stepType));
+    }
+
+    _configuration.StepType = stepType;
+    _configuration.Execute = null;
+    return this;
+  }
+
   public WorkflowStepBuilder After(Func<WorkflowContext, Task> after)
   {
     _configuration.After = after ?? throw new ArgumentNullException(nameof(after));

@@ -1,4 +1,4 @@
-@page "/driver-tour-config-demo"
+@page "/driver-tour-demo"
 @rendermode InteractiveServer
 @using DevExpress.Blazor
 @using WorkflowEngine
@@ -6,9 +6,9 @@
 @using WorkflowEngine.Blazor.Components
 @using Work.Workflows.DriverTour
 
-<PageTitle>Fahrer-Tour Config Demo</PageTitle>
+<PageTitle>Fahrer-Tour Demo</PageTitle>
 
-<h1>Logistikfahrer – Tour-Workflow Config Demo</h1>
+<h1>Logistikfahrer – Tour-Workflow Demo</h1>
 
 <div class="card p-3" style="max-width: 640px;">
 	<h4>@_previewTour.Name</h4>
@@ -62,7 +62,7 @@
 
 	private void StartTour()
 	{
-		_definition = DriverTourWorkflow.BuildFromConfig();
+		_definition = DriverTourWorkflow.Build();
 		_showPopup = true;
 	}
 

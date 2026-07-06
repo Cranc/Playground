@@ -18,4 +18,8 @@
     <ProjectReference Include="..\WorkflowEngine.Blazor\WorkflowEngine.Blazor.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\json\DriverTourWorkflow.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

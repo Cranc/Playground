@@ -1,0 +1,17 @@
+{
+  "name": "DriverTour",
+  "startStep": "TourStart",
+  "steps": [
+    { "name": "TourStart", "execute": "InitializeTourStep" },
+    { "name": "StopArrival", "component": "StopArrivalPage" },
+    { "name": "ShipmentSelection", "component": "ShipmentSelectionPage" },
+    { "name": "ShipmentStatus", "component": "ShipmentStatusPage" },
+    { "name": "Signature", "component": "SignaturePage" },
+    { "name": "CompleteShipment", "execute": "CompleteShipmentStep" },
+    { "name": "BulkShipmentStatus", "component": "BulkShipmentStatusPage" },
+    { "name": "CompleteBulkShipments", "execute": "CompleteBulkShipmentsStep" },
+    { "name": "StopComplete", "execute": "CompleteStopStep" },
+    { "name": "LoadCarrierBooking", "component": "LoadCarrierBookingPage", "execute": "AdvanceStopStep" },
+    { "name": "TourEnd", "component": "TourEndPage" }
+  ]
+}
