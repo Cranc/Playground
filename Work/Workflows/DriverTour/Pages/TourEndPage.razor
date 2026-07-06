@@ -1,0 +1,69 @@
+@inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
+@using DevExpress.Blazor
+@using Work.Workflows.DriverTour
+
+<div class="card p-3">
+	<h4>Tourende – @_tour.Name</h4>
+	<p>Alle Stopps wurden bearbeitet. Übersicht der dokumentierten Daten:</p>
+
+	@foreach (var stop in _tour.Stops)
+	{
+		<div class="border rounded p-2 mb-3">
+			<h6>@stop.Name <small class="text-muted">(@stop.Address)</small></h6>
+
+			<table class="table table-sm mb-2">
+				<thead>
+					<tr>
+						<th>Tracking-Nr.</th>
+						<th>Beschreibung</th>
+						<th>Status</th>
+						<th>Unterschrift</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var shipment in stop.Shipments)
+					{
+						<tr>
+							<td>@shipment.TrackingNumber</td>
+							<td>@shipment.Description</td>
+							<td>@(shipment.Status is not null ? ShipmentStatusInfo.LabelFor(shipment.Status.Value) : "-")</td>
+							<td>@(shipment.Signature ?? "-")</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+
+			@if (stop.LoadCarrierBookings.Count > 0)
+			{
+				<p class="mb-1"><strong>Lademittelbuchungen:</strong></p>
+				<ul>
+					@foreach (var booking in stop.LoadCarrierBookings)
+					{
+						<li>@booking.Type – Zugang: @booking.Zugang, Abgang: @booking.Abgang</li>
+					}
+				</ul>
+			}
+			else
+			{
+				<p class="text-muted mb-0">Keine Lademittelbuchungen erfasst.</p>
+			}
+		</div>
+	}
+
+	<DxButton CssClass="btn btn-success" Click="FinishAsync">Tour beenden</DxButton>
+</div>
+
+@code {
+	private Tour _tour = null!;
+
+	protected override void OnParametersSet()
+	{
+		_tour = Context.Get<Tour>("Tour");
+	}
+
+	private Task FinishAsync()
+	{
+		Context.Set("Tour.CompletedAtUtc", DateTime.UtcNow);
+		return AdvanceAsync();
+	}
+}

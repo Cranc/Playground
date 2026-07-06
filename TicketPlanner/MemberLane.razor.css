@@ -1,0 +1,29 @@
+.team-capacity-sub { font-size:0.85rem; color:#9aa3b2; }
+.add-member-form { background:rgba(255,255,255,0.02); padding:0.5rem; border-radius:6px; margin-bottom:0.75rem; }
+.member-lanes { display:flex; flex-direction:column; gap:0.75rem; }
+.member-lane { background: rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.03); padding:0.75rem; border-radius:6px; }
+.member-header-row { display:flex; gap:0.75rem; align-items:center; }
+.member-avatar { width:44px; height:44px; border-radius:6px; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.9rem; }
+.member-main { flex:1; }
+.member-title { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem; }
+.member-name { font-weight:700; }
+.member-role { font-weight:400; color:#9aa3b2; font-size:0.9rem; }
+.capacity-row { display:flex; align-items:center; gap:0.75rem; }
+.progress-wrap { flex:1; }
+.member-progress { width:100%; }
+.member-progress .dxbl-progress-bar-indicator { height:12px; border-radius:4px; transition: background-color 300ms ease; }
+.capacity-text { color:#00D3A7; font-weight:600; margin-left:0.5rem; }
+.assigned-tickets { display:flex; gap:0.5rem; flex-wrap:wrap; padding-top:0.5rem; }
+.assigned-ticket-row { display:flex; gap:0.5rem; flex-wrap:wrap; }
+.assigned-ticket { background: rgba(255,255,255,0.02); padding:0.4rem 0.6rem; border-radius:6px; border:1px solid rgba(255,255,255,0.03); display:flex; gap:0.5rem; align-items:center; cursor:grab; }
+.assigned-ticket:active { cursor:grabbing; }
+.ticket-key { font-weight:600; color:#9bd0a6; font-size:0.85rem; }
+.ticket-type.badge { margin-left:0.25rem; font-size:0.7rem; padding:0.15rem 0.4rem; }
+.ticket-hours { margin-left:0.5rem; color:#9aa3b2; font-size:0.8rem; }
+.btn-unassign { background:none; border:none; color:#9aa3b2; cursor:pointer; font-size:1.2rem; padding:0; margin-left:0.25rem; line-height:1; display:flex; align-items:center; }
+.btn-unassign:hover { color:#ff5c7a; }
+.lane-empty { color:#9aa3b2; }
+.dxbl-progress-bar {
+  width: unset !important;
+  --dxbl-progress-bar-width: unset !important;
+}

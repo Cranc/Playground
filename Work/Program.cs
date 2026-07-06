@@ -1,16 +1,30 @@
 using Work.Components;
-using Work.Components.TicketPlanner.Services;
+using TicketPlanner.Services;
+using WorkflowEngine.DependencyInjection;
+using Work.Workflows.Steps;
+using Work.Workflows.DriverTour.Steps;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDevExpressBlazor();
+builder.Services.AddWorkflowEngine();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // TicketPlanner services
-builder.Services.AddScoped<ITicketService, DummyTicketService>();
+builder.Services
+  .AddScoped<ITicketService, DummyTicketService>()
+  .AddScoped<ITicketPlanStorageService, TicketPlanStorageService>()
+  .AddScoped<CreateUserStep>()
+  .AddScoped<FinishStep>()
+  .AddScoped<InitializeTourStep>()
+  .AddScoped<CompleteShipmentStep>()
+  .AddScoped<CompleteBulkShipmentsStep>()
+  .AddScoped<CompleteStopStep>()
+  .AddScoped<AdvanceStopStep>()
+  .AddLocalStorageServices();
 
 var app = builder.Build();
 

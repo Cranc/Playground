@@ -1,0 +1,50 @@
+@inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
+@using DevExpress.Blazor
+
+<div class="card p-3">
+	<h4>Advanced Optionen</h4>
+	<p>Hier können zusätzliche Optionen gesetzt werden.</p>
+	<div class="form-check mb-3">
+		<DxCheckBox @bind-Checked="@SimulateFinishError">
+			Fehler beim Finish simulieren
+		</DxCheckBox>
+	</div>
+	<div class="d-flex gap-2">
+		<DxButton CssClass="btn btn-primary" Click="ContinueAsync">Weiter zu Finish</DxButton>
+		<DxButton CssClass="btn btn-secondary" Click="GoToSummaryAsync">Zur Summary</DxButton>
+	</div>
+
+	@if (!string.IsNullOrWhiteSpace(_lastError))
+	{
+		<div class="alert alert-warning mt-3">Letzter Fehler: @_lastError</div>
+	}
+</div>
+
+@code {
+	public bool SimulateFinishError { get; set; }
+	private string? _lastError;
+
+	protected override void OnParametersSet()
+	{
+		if (Context.TryGet<bool>("Finish.TriggerError", out var trigger))
+		{
+			SimulateFinishError = trigger;
+		}
+
+		if (Context.TryGet<string>("Finish.Error", out var error))
+		{
+			_lastError = error;
+		}
+	}
+
+	private Task ContinueAsync()
+	{
+		Context.Set("Finish.TriggerError", SimulateFinishError);
+		return AdvanceAsync("Finish");
+	}
+
+	private Task GoToSummaryAsync()
+	{
+		return AdvanceAsync("Summary");
+	}
+}

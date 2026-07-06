@@ -1,0 +1,125 @@
+@using Microsoft.AspNetCore.Components
+
+@if (IsOpen)
+{
+<div class="amd-backdrop">
+	<div class="amd-dialog">
+		<div class="amd-header">
+			<h4>Add Team Member</h4>
+			<button class="amd-close" @onclick="Cancel">×</button>
+		</div>
+		<div class="amd-body">
+			<label class="label">NAME</label>
+			<input class="form-control" placeholder="Full name" @bind="Name" />
+
+			<label class="label mt-2">ROLE</label>
+			<input class="form-control" placeholder="e.g. Backend Dev" @bind="Role" />
+
+			<label class="label mt-2">SPRINT CAPACITY (HOURS)</label>
+			<input class="form-control" type="number" @bind="Capacity" />
+
+			<label class="label mt-2">COLOR</label>
+			<div class="color-palette">
+				@foreach (var c in Colors)
+				{
+					<button type="button" class="color-swatch @(SelectedColor == c ? "selected" : "")" style="background:@c" @onclick="(() => SelectColor(c))"></button>
+				}
+			</div>
+
+			<div class="member-preview">
+				<div class="preview-avatar" style="background:@SelectedColor">@GetInitials(Name)</div>
+				<div class="preview-info">
+					<div class="preview-name">@((string.IsNullOrWhiteSpace(Name)) ? "Full Name" : Name)</div>
+					<div class="preview-sub">@((string.IsNullOrWhiteSpace(Role)) ? $"Role - {Capacity}h / sprint" : $"{Role} - {Capacity}h / sprint")</div>
+				</div>
+			</div>
+		</div>
+		<div class="amd-footer">
+			<button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+			<button class="btn btn-success" @onclick="Add" disabled="@string.IsNullOrWhiteSpace(Name)">Add Member</button>
+		</div>
+	</div>
+</div>
+}
+
+@code {
+	/// <summary>
+	/// Trigger to control the visibility of the dialog. When set to true, the dialog is displayed; when set to false, it is hidden.
+	/// </summary>
+	[Parameter]
+	public bool IsOpen { get; set; }
+	/// <summary>
+	/// Event callback that is invoked when the IsOpen property changes. This allows the parent component to be notified when the dialog is opened or closed.
+	/// </summary>
+	[Parameter]
+	public EventCallback<bool> IsOpenChanged { get; set; }
+	/// <summary>
+	/// Event callback that is invoked when a new team member is added. The added member is passed as an argument to the callback.
+	/// </summary>
+	[Parameter]
+	public EventCallback<PlannerMember> OnAdd { get; set; }
+	/// <summary>
+	/// Name of the team member to be added. This property is bound to the input field in the dialog.
+	/// </summary>
+	string Name { get; set; } = string.Empty;
+	/// <summary>
+	/// Role of the team member to be added. This property is bound to the input field in the dialog.
+	/// </summary>
+	string Role { get; set; } = string.Empty;
+	/// <summary>
+	/// Capacity of the team member to be added, in hours. This property is bound to the input field in the dialog and defaults to 40 hours.
+	/// </summary>
+	decimal Capacity { get; set; } = 40;
+	/// <summary>
+	/// Selected color for the team member to be added. This property is bound to the color selection in the dialog and defaults to "#00D3A7".
+	/// </summary>
+	string SelectedColor { get; set; } = "#00D3A7";
+
+	/// <summary>
+	/// Colors available for selection when adding a new team member. This array contains a set of predefined color hex codes that can be chosen by the user.
+	/// </summary>
+	readonly string[] Colors = new[] { "#00D3A7", "#FF9AA2", "#FFB572", "#6B5CFF", "#FF5C7A", "#FFD66B", "#00B9C0", "#FF7A7A" };
+
+	/// <summary>
+	/// Sets the selected color for the new team member. This method is called when a color swatch is clicked in the dialog, updating the SelectedColor property accordingly.
+	/// </summary>
+	/// <param name="c">Returns the current selected color. </param>
+	void SelectColor(string c) => SelectedColor = c;
+
+	string GetInitials(string name)
+	{
+		return TicketPlannerHelper.GetInitials(name);
+	}
+
+	/// <summary>
+	/// Async method that handles the addition of a new team member. It creates a new PlannerMember object with the provided name, role, capacity, and selected color, invokes the OnAdd callback to notify the parent component, and then closes the dialog.
+	/// </summary>
+	/// <returns></returns>
+	async Task Add()
+	{
+		var member = new PlannerMember { DisplayName = Name, Role = Role, MonthlyCapacityHours = Capacity, Color = SelectedColor };
+		await OnAdd.InvokeAsync(member);
+		await Close();
+	}
+
+	/// <summary>
+	/// Cancels the addition of a new team member and closes the dialog without making any changes. It resets the input fields to their default values and invokes the IsOpenChanged callback to notify the parent component that the dialog has been closed.
+	/// </summary>
+	/// <returns></returns>
+	async Task Cancel()
+	{
+		await Close();
+	}
+
+	/// <summary>
+	/// Closes the dialog and resets the input fields to their default values. It sets IsOpen to false, invokes the IsOpenChanged callback, and clears the Name, Role, Capacity, and SelectedColor properties.
+	/// </summary>
+	/// <returns></returns>
+	async Task Close()
+	{
+		IsOpen = false;
+		await IsOpenChanged.InvokeAsync(IsOpen);
+		// reset form
+		Name = string.Empty; Role = string.Empty; Capacity = 40; SelectedColor = Colors[0];
+	}
+}

@@ -1,0 +1,59 @@
+@inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
+@using DevExpress.Blazor
+@using Work.Workflows.DriverTour
+
+<div class="card p-3">
+	<h4>Ankunft am Stopp @(_stopIndex + 1) von @_tour.Stops.Count</h4>
+	<p><strong>@_stop.Name</strong><br />@_stop.Address</p>
+
+	<table class="table table-sm">
+		<thead>
+			<tr>
+				<th>Tracking-Nr.</th>
+				<th>Beschreibung</th>
+				<th>Status</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var shipment in _stop.Shipments)
+			{
+				<tr>
+					<td>@shipment.TrackingNumber</td>
+					<td>@shipment.Description</td>
+					<td>@(shipment.IsCompleted ? ShipmentStatusInfo.LabelFor(shipment.Status!.Value) : "offen")</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+
+	<p>Wie sollen die Sendungen dieses Stopps bearbeitet werden?</p>
+	<div class="d-flex gap-2">
+		<DxButton CssClass="btn btn-primary" Click="StartBulkAsync">Stop-Abschluss (alle gemeinsam)</DxButton>
+		<DxButton CssClass="btn btn-secondary" Click="StartIndividualAsync">Einzelbearbeitung</DxButton>
+	</div>
+</div>
+
+@code {
+	private Tour _tour = null!;
+	private Stop _stop = null!;
+	private int _stopIndex;
+
+	protected override void OnParametersSet()
+	{
+		_tour = Context.Get<Tour>("Tour");
+		_stopIndex = Context.Get<int>("Tour.CurrentStopIndex");
+		_stop = _tour.Stops[_stopIndex];
+	}
+
+	private Task StartBulkAsync()
+	{
+		_stop.ProcessingMode = "Bulk";
+		return AdvanceAsync("BulkShipmentStatus");
+	}
+
+	private Task StartIndividualAsync()
+	{
+		_stop.ProcessingMode = "Einzeln";
+		return AdvanceAsync("ShipmentSelection");
+	}
+}

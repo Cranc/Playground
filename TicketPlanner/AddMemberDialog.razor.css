@@ -1,0 +1,21 @@
+.amd-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:2000; }
+/* Use app color variables where available so dialog matches the rest of the app */
+.amd-dialog { width:420px; background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius:8px; padding:16px; box-shadow:0 8px 24px rgba(0,0,0,0.6); color: var(--bs-body-color, #fff); }
+.amd-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.amd-header h4 { margin:0; }
+.amd-close { background:transparent; border:none; color:var(--bs-body-color, #fff); font-size:20px; cursor:pointer; }
+.amd-body { display:flex; flex-direction:column; gap:8px; }
+.label { font-size:12px; color:#9aa3b2; font-weight:600; }
+.color-palette { display:flex; gap:8px; margin-top:6px; }
+.color-swatch { width:24px; height:24px; border-radius:4px; border:2px solid transparent; cursor:pointer; }
+.color-swatch.selected { outline:3px solid #ffd66b; }
+.member-preview { display:flex; gap:12px; align-items:center; margin-top:10px; border:1px solid var(--bs-border-color); padding:8px; border-radius:6px; }
+.preview-avatar { width:44px; height:44px; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; }
+.preview-name { font-weight:600; }
+.preview-sub { color:#9aa3b2; font-size:13px; }
+.amd-footer { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+.btn { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
+.btn-secondary { background: transparent; color: var(--bs-body-color, #fff); border:1px solid var(--bs-border-color); }
+.btn-success { background:#00D3A7; color:#fff; }
+.form-control { background: var(--bs-body-bg); color:var(--bs-body-color, #fff); border:1px solid var(--bs-border-color); padding:8px; border-radius:6px; }
+.mt-2 { margin-top:8px; }

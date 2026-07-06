@@ -1,0 +1,55 @@
+@inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
+@using DevExpress.Blazor
+@using Work.Workflows.DriverTour
+
+<div class="card p-3">
+	<h4>Tourstart</h4>
+	<p><strong>@_tour.Name</strong> (@_tour.Id)</p>
+	<p>@_tour.Stops.Count geplante Stopps mit insgesamt @_tour.Stops.Sum(s => s.Shipments.Count) Sendungen.</p>
+
+	<table class="table table-sm">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Stopp</th>
+				<th>Adresse</th>
+				<th>Sendungen</th>
+			</tr>
+		</thead>
+		<tbody>
+			@for (var i = 0; i < _tour.Stops.Count; i++)
+			{
+				var stop = _tour.Stops[i];
+				<tr>
+					<td>@(i + 1)</td>
+					<td>@stop.Name</td>
+					<td>@stop.Address</td>
+					<td>@stop.Shipments.Count</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+
+	<DxButton CssClass="btn btn-primary" Click="StartTourAsync">Tour starten</DxButton>
+</div>
+
+@code {
+	private Tour _tour = null!;
+
+	protected override void OnInitialized()
+	{
+		if (!Context.TryGet<Tour>("Tour", out var tour) || tour is null)
+		{
+			tour = DriverTourSeedData.CreateDummyTour();
+			Context.Set("Tour", tour);
+			Context.Set("Tour.CurrentStopIndex", 0);
+		}
+
+		_tour = tour;
+	}
+
+	private Task StartTourAsync()
+	{
+		return AdvanceAsync("StopArrival");
+	}
+}

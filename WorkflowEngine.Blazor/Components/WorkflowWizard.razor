@@ -1,0 +1,101 @@
+@using WorkflowEngine.Definition
+@using WorkflowEngine.Execution
+@implements IDisposable
+@inject IServiceProvider Services
+
+@if (_runner is null)
+{
+	<p>Workflow wird initialisiert...</p>
+}
+else if (_runner.IsCompleted)
+{
+	@if (CompletedContent is not null)
+	{
+		@CompletedContent
+	}
+	else
+	{
+		<p>Workflow abgeschlossen.</p>
+	}
+}
+else if (_runner.CurrentStep?.ComponentType is not null)
+{
+	<CascadingValue Value="_runner">
+		<CascadingValue Value="_context">
+			<DynamicComponent Type="_runner.CurrentStep.ComponentType" />
+		</CascadingValue>
+	</CascadingValue>
+}
+else
+{
+	<p>Workflow läuft...</p>
+}
+
+@code {
+	private WorkflowRunner? _runner;
+	private WorkflowContext? _context;
+	private WorkflowDefinition? _activeDefinition;
+	private bool _completionNotified;
+
+	[Parameter, EditorRequired]
+	public WorkflowDefinition Definition { get; set; } = null!;
+
+	[Parameter]
+	public RenderFragment? CompletedContent { get; set; }
+
+	[Parameter]
+	public EventCallback<WorkflowContext> OnCompleted { get; set; }
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (_runner is not null && ReferenceEquals(_activeDefinition, Definition))
+		{
+			return;
+		}
+
+		if (_runner is not null)
+		{
+			_runner.StateChanged -= HandleRunnerStateChanged;
+		}
+
+		_context = new WorkflowContext(Services);
+		_runner = new WorkflowRunner(Definition, _context);
+		_activeDefinition = Definition;
+		_completionNotified = false;
+		_runner.StateChanged += HandleRunnerStateChanged;
+
+		await _runner.StartAsync();
+		await NotifyCompletedIfNeededAsync();
+	}
+
+	private void HandleRunnerStateChanged()
+	{
+		_ = InvokeAsync(async () =>
+		{
+			await NotifyCompletedIfNeededAsync();
+			StateHasChanged();
+		});
+	}
+
+	private async Task NotifyCompletedIfNeededAsync()
+	{
+		if (_runner is null || _context is null || !_runner.IsCompleted || _completionNotified)
+		{
+			return;
+		}
+
+		_completionNotified = true;
+		if (OnCompleted.HasDelegate)
+		{
+			await OnCompleted.InvokeAsync(_context);
+		}
+	}
+
+	public void Dispose()
+	{
+		if (_runner is not null)
+		{
+			_runner.StateChanged -= HandleRunnerStateChanged;
+		}
+	}
+}

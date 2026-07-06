@@ -1,0 +1,48 @@
+@inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
+@using DevExpress.Blazor
+@using Work.Workflows.DriverTour
+
+@if (_ready)
+{
+	<div class="card p-3">
+		<h4>Unterschrift des Empfängers</h4>
+		<p>Status: <strong>@ShipmentStatusInfo.LabelFor(_pendingStatus)</strong></p>
+		<p>Bitte den Empfänger unterschreiben lassen (Simulation: Name eintragen).</p>
+
+		<div class="mb-2">
+			<DxTextBox @bind-Text="_signatureName" NullText="Name des Unterzeichners" />
+		</div>
+
+		<div class="d-flex gap-2 mt-3">
+			<DxButton CssClass="btn btn-primary" Click="ConfirmAsync" Enabled="@(!_advancing && !string.IsNullOrWhiteSpace(_signatureName))">Unterschrift bestätigen</DxButton>
+			<DxButton CssClass="btn btn-light" Click="GoBackAsync" Enabled="@(!_advancing)">Zurück</DxButton>
+		</div>
+	</div>
+}
+
+@code {
+	private ShipmentStatus _pendingStatus;
+	private string? _signatureName;
+	private bool _ready;
+	private bool _advancing;
+
+	protected override void OnParametersSet()
+	{
+		// Der Workflow-Kontext kann kurz nach dem Verlassen dieses Schritts noch einmal
+		// benachrichtigt werden (Cascading-Value-Refresh), während "Shipment.PendingStatus"
+		// vom Folge-Schritt bereits entfernt wurde. In diesem Fall wird nichts mehr gerendert.
+		_ready = !_advancing && Context.TryGet<ShipmentStatus>("Shipment.PendingStatus", out _pendingStatus);
+	}
+
+	private Task ConfirmAsync()
+	{
+		if (_advancing)
+		{
+			return Task.CompletedTask;
+		}
+
+		_advancing = true;
+		Context.Set("Shipment.PendingSignature", _signatureName);
+		return AdvanceAsync("CompleteShipment");
+	}
+}

@@ -1,0 +1,90 @@
+@inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
+@using DevExpress.Blazor
+@using Work.Workflows.DriverTour
+
+<div class="card p-3">
+	<h4>Lademittelbuchung – @_stop.Name</h4>
+	<p>Bitte ausgetauschte bzw. übernommene Lademittel dokumentieren (Zugang und/oder Abgang).</p>
+
+	<div class="row g-2 align-items-end mb-3">
+		<div class="col-auto">
+			<label class="form-label">Lademittel</label>
+			<DxComboBox Data="DriverTourSeedData.LoadCarrierTypes" @bind-Value="_selectedType" NullText="Typ wählen" />
+		</div>
+		<div class="col-auto">
+			<label class="form-label">Zugang</label>
+			<DxSpinEdit @bind-Value="_zugang" MinValue="0" />
+		</div>
+		<div class="col-auto">
+			<label class="form-label">Abgang</label>
+			<DxSpinEdit @bind-Value="_abgang" MinValue="0" />
+		</div>
+		<div class="col-auto">
+			<DxButton CssClass="btn btn-outline-primary" Click="AddBooking" Enabled="@(!string.IsNullOrWhiteSpace(_selectedType) && (_zugang > 0 || _abgang > 0))">Buchung hinzufügen</DxButton>
+		</div>
+	</div>
+
+	@if (_bookings.Count > 0)
+	{
+		<table class="table table-sm">
+			<thead>
+				<tr>
+					<th>Lademittel</th>
+					<th>Zugang</th>
+					<th>Abgang</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var booking in _bookings)
+				{
+					<tr>
+						<td>@booking.Type</td>
+						<td>@booking.Zugang</td>
+						<td>@booking.Abgang</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+	else
+	{
+		<p class="text-muted">Noch keine Lademittelbuchungen erfasst.</p>
+	}
+
+	<DxButton CssClass="btn btn-primary mt-2" Click="ContinueAsync">Weiterfahrt</DxButton>
+</div>
+
+@code {
+	private Tour _tour = null!;
+	private Stop _stop = null!;
+	private readonly List<LoadCarrierBooking> _bookings = [];
+	private string? _selectedType;
+	private int _zugang;
+	private int _abgang;
+
+	protected override void OnParametersSet()
+	{
+		_tour = Context.Get<Tour>("Tour");
+		var stopIndex = Context.Get<int>("Tour.CurrentStopIndex");
+		_stop = _tour.Stops[stopIndex];
+	}
+
+	private void AddBooking()
+	{
+		if (string.IsNullOrWhiteSpace(_selectedType))
+		{
+			return;
+		}
+
+		_bookings.Add(new LoadCarrierBooking { Type = _selectedType, Zugang = _zugang, Abgang = _abgang });
+		_selectedType = null;
+		_zugang = 0;
+		_abgang = 0;
+	}
+
+	private Task ContinueAsync()
+	{
+		Context.Set("Stop.PendingLoadCarrierBookings", _bookings.ToList());
+		return AdvanceAsync();
+	}
+}

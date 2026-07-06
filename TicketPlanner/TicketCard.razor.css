@@ -1,25 +1,3 @@
-.ticket-pool {
-  display: flex;
-  gap: 1rem;
-  padding: 1rem;
-}
-.ticket-pool-sidebar {
-  width: 320px;
-  background: var(--bs-body-bg);
-  border-right: 1px solid var(--bs-border-color);
-  padding: 0.75rem;
-}
-.search-box {
-  width: 100%;
-  margin-bottom: 0.5rem;
-}
-.filters {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-.filter-box { flex: 1; }
-.ticket-list { display: flex; flex-direction: column; gap: 0.75rem; }
 .ticket-card {
   background: rgba(255,255,255,0.02);
   border: 1px solid rgba(255,255,255,0.03);
@@ -28,6 +6,14 @@
   cursor: grab;
 }
 .ticket-card:active { cursor: grabbing; }
+
+/* Rote Hervorhebung, wenn EstimatedHours == 0 */
+.ticket-card.no-hours {
+  background: rgba(255,92,92,0.16);
+  border-color: rgba(255,92,92,0.2);
+  box-shadow: 0 0 0 4px rgba(255,92,92,0.02);
+}
+
 .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem; }
 .ticket-key { font-size: 0.75rem; color: #9aa3b2; }
 .ticket-type.badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; }
@@ -38,9 +24,9 @@
 .priority-medium { background:#f4c963; }
 .priority-high { background:#ff7a7a; }
 .priority-critical { background:#d15fff; }
+
+/* Typ-Badges */
 .type-feature { background:#6b5cff; color:white; }
 .type-bug { background:#ff5c7a; color:white; }
 .type-task { background:#00d3a7; color:white; }
 .type-spike { background:#ffd66b; color:black; }
-.ticket-pool-main { flex:1; padding:1rem; }
-.placeholder-area { border:2px dashed rgba(255,255,255,0.03); height:300px; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#9aa3b2; }

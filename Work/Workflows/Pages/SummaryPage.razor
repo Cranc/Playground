@@ -1,0 +1,55 @@
+@inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
+@using DevExpress.Blazor
+
+<div class="card p-3">
+	<h4>Summary</h4>
+	<p><strong>Pfad:</strong> @_path</p>
+	<p><strong>Benutzer:</strong> @_userName (@_email)</p>
+	<p><strong>Rollen:</strong> @string.Join(", ", _roles)</p>
+
+	<div class="d-flex gap-2 mt-3">
+		<DxButton CssClass="btn btn-primary" Click="GoToFinishAsync">Finish</DxButton>
+		<DxButton CssClass="btn btn-secondary" Click="GoToAdvancedAsync">Advanced</DxButton>
+		<DxButton CssClass="btn btn-light" Click="GoBackAsync">Zurück</DxButton>
+	</div>
+</div>
+
+@code {
+	private string _path = "-";
+	private string _userName = "-";
+	private string _email = "-";
+	private List<string> _roles = [];
+
+	protected override void OnParametersSet()
+	{
+		if (Context.TryGet<string>("Wizard.Path", out var path))
+		{
+			_path = path;
+		}
+
+		if (Context.TryGet<string>("User.Name", out var userName))
+		{
+			_userName = userName;
+		}
+
+		if (Context.TryGet<string>("User.Email", out var email))
+		{
+			_email = email;
+		}
+
+		if (Context.TryGet<List<string>>("User.Roles", out var roles))
+		{
+			_roles = roles;
+		}
+	}
+
+	private Task GoToFinishAsync()
+	{
+		return AdvanceAsync("Finish");
+	}
+
+	private Task GoToAdvancedAsync()
+	{
+		return AdvanceAsync("Advanced");
+	}
+}

@@ -1,0 +1,63 @@
+@inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
+@using DevExpress.Blazor
+
+<div class="card p-3">
+	<h4>Rollen konfigurieren</h4>
+	<DxComboBox Data="_availableRoles" @bind-Value="_selectedRole" NullText="Rolle wählen" />
+	<div class="d-flex gap-2 mt-2">
+		<DxButton CssClass="btn btn-outline-primary" Click="AddRole" Enabled="@(!string.IsNullOrWhiteSpace(_selectedRole))">Rolle hinzufügen</DxButton>
+	</div>
+
+	@if (_roles.Count > 0)
+	{
+		<ul class="mt-3">
+			@foreach (var role in _roles)
+			{
+				<li>@role</li>
+			}
+		</ul>
+	}
+
+	<div class="d-flex gap-2 mt-3">
+		<DxButton CssClass="btn btn-primary" Click="GoToSummaryAsync">Summary</DxButton>
+		<DxButton CssClass="btn btn-secondary" Click="GoToAdvancedAsync">Advanced</DxButton>
+		<DxButton CssClass="btn btn-light" Click="GoBackAsync">Zurück</DxButton>
+	</div>
+</div>
+
+@code {
+	private readonly List<string> _availableRoles = ["Reader", "Editor", "Admin", "Auditor"];
+	private readonly List<string> _roles = [];
+	private string? _selectedRole;
+
+	protected override void OnInitialized()
+	{
+		if (Context.TryGet<List<string>>("User.Roles", out var existingRoles))
+		{
+			_roles.AddRange(existingRoles);
+		}
+	}
+
+	private void AddRole()
+	{
+		if (string.IsNullOrWhiteSpace(_selectedRole) || _roles.Contains(_selectedRole))
+		{
+			return;
+		}
+
+		_roles.Add(_selectedRole);
+		Context.Set("User.Roles", _roles.ToList());
+	}
+
+	private Task GoToSummaryAsync()
+	{
+		Context.Set("User.Roles", _roles.ToList());
+		return AdvanceAsync("Summary");
+	}
+
+	private Task GoToAdvancedAsync()
+	{
+		Context.Set("User.Roles", _roles.ToList());
+		return AdvanceAsync("Advanced");
+	}
+}

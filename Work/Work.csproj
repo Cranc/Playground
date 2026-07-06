@@ -8,11 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazor.LocalStorage" Version="10.0.0" />
     <PackageReference Include="DevExpress.Blazor" Version="26.1.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Components\TicketPlanner\Components\" />
+    <ProjectReference Include="..\TicketPlanner\TicketPlanner.csproj" />
+    <ProjectReference Include="..\WorkflowEngine\WorkflowEngine.csproj" />
+    <ProjectReference Include="..\WorkflowEngine.Blazor\WorkflowEngine.Blazor.csproj" />
   </ItemGroup>
 
 </Project>

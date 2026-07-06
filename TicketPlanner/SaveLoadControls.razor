@@ -1,0 +1,50 @@
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using TicketPlanner.Constants
+
+<script src="@JavaScriptConstants.Scripts.FileExporter"></script>
+<div class="save-load-controls">
+	<DxButton CssClass="btn btn-secondary btn-sm" Click="OnSaveClicked">Save</DxButton>
+	<DxButton CssClass="btn btn-primary btn-sm" Click="OnExportClicked">Export</DxButton>
+	<DxButton Id="save-load-controls-import-btn" CssClass="btn btn-primary btn-sm">Import</DxButton>
+	<DxFileInput ExternalSelectButtonCssSelector="#save-load-controls-import-btn"
+							Visible="false"
+							MaxFileSize="15000000"
+							FilesUploading="OnFilesUploading">
+	</DxFileInput>
+</div>
+
+@code {
+
+	/// <summary>
+	/// Event callback that is invoked when the "Save" button is clicked. This allows the parent component to handle the save action, such as persisting data or triggering a save operation.
+	/// </summary>
+	[Parameter]
+	public EventCallback OnSave { get; set; }
+	/// <summary>
+	/// Event callback that is invoked when the "Export" button is clicked. This allows the parent component to handle the export action, such as generating a file or exporting data.
+	/// </summary>
+	[Parameter]
+	public EventCallback OnExport { get; set; }
+	/// <summary>
+	/// Event callback that is invoked when files are selected for upload. The callback receives a FilesUploadingEventArgs object containing details about the selected files, allowing the parent component to handle the file upload process.
+	/// </summary>
+	[Parameter]
+	public EventCallback<FilesUploadingEventArgs> OnFileSelected { get; set; }
+
+	async Task OnSaveClicked()
+	{
+		if (OnSave.HasDelegate) await OnSave.InvokeAsync(null);
+	}
+
+	async Task OnExportClicked()
+	{
+		if (OnExport.HasDelegate) await OnExport.InvokeAsync(null);
+	}
+
+	async Task OnFilesUploading(FilesUploadingEventArgs args)
+	{
+		if (OnFileSelected.HasDelegate) await OnFileSelected.InvokeAsync(args);
+	}
+}

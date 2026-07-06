@@ -1,0 +1,31 @@
+@inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
+@using DevExpress.Blazor
+
+<div class="card p-3">
+	<h4>Bestehenden Benutzer auswählen</h4>
+	<DxComboBox Data="_users" @bind-Value="_selectedUser" NullText="Benutzer wählen" />
+	<div class="d-flex gap-2 mt-3">
+		<DxButton CssClass="btn btn-primary" Click="ContinueAsync" Enabled="@(!string.IsNullOrWhiteSpace(_selectedUser))">Weiter</DxButton>
+		<DxButton CssClass="btn btn-secondary" Click="GoBackAsync">Zurück</DxButton>
+	</div>
+</div>
+
+@code {
+	private readonly List<string> _users = ["Alice", "Bob", "Charlie"];
+	private string? _selectedUser;
+
+	protected override void OnInitialized()
+	{
+		if (Context.TryGet<string>("User.Name", out var existingName))
+		{
+			_selectedUser = existingName;
+		}
+	}
+
+	private Task ContinueAsync()
+	{
+		Context.Set("User.Name", _selectedUser);
+		Context.Set("Wizard.Path", "SelectUser");
+		return AdvanceAsync("ConfigureRoles");
+	}
+}

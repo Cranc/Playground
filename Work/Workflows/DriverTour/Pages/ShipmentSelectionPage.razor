@@ -1,0 +1,59 @@
+@inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
+@using DevExpress.Blazor
+@using Work.Workflows.DriverTour
+
+<div class="card p-3">
+	<h4>Einzelbearbeitung – @_stop.Name</h4>
+
+	@if (_stop.OpenShipments.Any())
+	{
+		<p>Noch offene Sendungen an diesem Stopp:</p>
+		<table class="table table-sm">
+			<thead>
+				<tr>
+					<th>Tracking-Nr.</th>
+					<th>Beschreibung</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var shipment in _stop.OpenShipments)
+				{
+					<tr>
+						<td>@shipment.TrackingNumber</td>
+						<td>@shipment.Description</td>
+						<td><DxButton CssClass="btn btn-sm btn-primary" Click="() => SelectShipmentAsync(shipment.Id)">Bearbeiten</DxButton></td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+	else
+	{
+		<p>Alle Sendungen dieses Stopps sind bearbeitet.</p>
+		<DxButton CssClass="btn btn-primary" Click="CompleteStopAsync">Stopp abschließen</DxButton>
+	}
+</div>
+
+@code {
+	private Tour _tour = null!;
+	private Stop _stop = null!;
+
+	protected override void OnParametersSet()
+	{
+		_tour = Context.Get<Tour>("Tour");
+		var stopIndex = Context.Get<int>("Tour.CurrentStopIndex");
+		_stop = _tour.Stops[stopIndex];
+	}
+
+	private Task SelectShipmentAsync(string shipmentId)
+	{
+		Context.Set("Tour.CurrentShipmentId", shipmentId);
+		return AdvanceAsync("ShipmentStatus");
+	}
+
+	private Task CompleteStopAsync()
+	{
+		return AdvanceAsync("StopComplete");
+	}
+}

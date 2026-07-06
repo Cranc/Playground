@@ -1,0 +1,25 @@
+@inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
+@using DevExpress.Blazor
+
+<div class="card p-3">
+	<h4>Start</h4>
+	<p>Wie möchten Sie fortfahren?</p>
+	<div class="d-flex gap-2">
+		<DxButton CssClass="btn btn-primary" Click="SelectExistingAsync">Benutzer auswählen</DxButton>
+		<DxButton CssClass="btn btn-secondary" Click="CreateNewAsync">Benutzer anlegen</DxButton>
+	</div>
+</div>
+
+@code {
+	private Task SelectExistingAsync()
+	{
+		Context.Set("Wizard.Path", "SelectUser");
+		return AdvanceAsync("SelectUser");
+	}
+
+	private Task CreateNewAsync()
+	{
+		Context.Set("Wizard.Path", "CreateUser");
+		return AdvanceAsync("CreateUser");
+	}
+}
