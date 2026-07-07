@@ -9,7 +9,6 @@ namespace Work.Workflows.Steps;
 [ConsumesContext("CreateUser.Attempts", typeof(int), Required = false)]
 [ProducesContext("CreateUser.Attempts", typeof(int))]
 [ProducesContext("User.Created", typeof(object))]
-[Outcome("ConfigureRoles", DisplayName = "Rollen konfigurieren")]
 public sealed class CreateUserStep : IWorkflowStep
 {
   public Task<StepResult> ExecuteAsync(WorkflowContext context)
@@ -31,6 +30,6 @@ public sealed class CreateUserStep : IWorkflowStep
     };
 
     context.Set("User.Created", createdUser);
-    return Task.FromResult(StepResult.Ok(nextStep: "ConfigureRoles", result: createdUser));
+    return Task.FromResult(StepResult.Ok(result: createdUser));
   }
 }

@@ -1,0 +1,50 @@
+@namespace WorkflowEngine.Editor.Components.Editor
+@using WorkflowEngine.Validation
+
+<div class="validation-panel">
+  <h3>Validierung</h3>
+  @if (Issues.Count == 0)
+  {
+    <p class="validation-ok">✓ Keine Probleme gefunden.</p>
+  }
+  else
+  {
+    @if (Errors.Count > 0)
+    {
+      <p class="validation-summary error">@Errors.Count Fehler (blockiert Export)</p>
+      <ul class="validation-list">
+        @foreach (var issue in Errors)
+        {
+          <li class="issue-error" @onclick="() => OnIssueClicked.InvokeAsync(issue.StepName)">
+            @(issue.StepName is not null ? $"[{issue.StepName}] " : "")@issue.Message
+          </li>
+        }
+      </ul>
+    }
+
+    @if (Warnings.Count > 0)
+    {
+      <p class="validation-summary warning">@Warnings.Count Warnung(en)</p>
+      <ul class="validation-list">
+        @foreach (var issue in Warnings)
+        {
+          <li class="issue-warning" @onclick="() => OnIssueClicked.InvokeAsync(issue.StepName)">
+            @(issue.StepName is not null ? $"[{issue.StepName}] " : "")@issue.Message
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>
+
+@code {
+  [Parameter, EditorRequired]
+  public IReadOnlyList<ValidationIssue> Issues { get; set; } = [];
+
+  [Parameter]
+  public EventCallback<string?> OnIssueClicked { get; set; }
+
+  private List<ValidationIssue> Errors => Issues.Where(i => i.Severity == ValidationSeverity.Error).ToList();
+
+  private List<ValidationIssue> Warnings => Issues.Where(i => i.Severity == ValidationSeverity.Warning).ToList();
+}

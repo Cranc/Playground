@@ -14,8 +14,11 @@ public static class UserWizardWorkflow
       .StartWith("Start")
       .Step("Start")
         .Component<StartPage>()
+        .On("SelectUser", "SelectUser")
+        .On("CreateUser", "CreateUser")
       .Step("SelectUser")
         .Component<SelectUserPage>()
+        .Next("ConfigureRoles")
       .Step("CreateUser")
         .Before(context =>
         {
@@ -27,12 +30,19 @@ public static class UserWizardWorkflow
         {
           context.Set("CreateUser.LastRunUtc", DateTime.UtcNow);
         })
+        .Next("ConfigureRoles")
       .Step("ConfigureRoles")
         .Component<ConfigureRolesPage>()
+        .On("Summary", "Summary")
+        .On("Advanced", "Advanced")
       .Step("Summary")
         .Component<SummaryPage>()
+        .On("Finish", "Finish")
+        .On("Advanced", "Advanced")
       .Step("Advanced")
         .Component<AdvancedPage>()
+        .On("Finish", "Finish")
+        .On("Summary", "Summary")
       .Step("Finish")
         .Execute<FinishStep>()
         .Retry(3)

@@ -5,7 +5,6 @@
 @attribute [WorkflowBlock(DisplayName = "Unterschrift erfassen", Category = "Fahrer-Tour", Description = "Erfasst die Unterschrift des Empfängers.")]
 @attribute [ConsumesContext("Shipment.PendingStatus", typeof(ShipmentStatus))]
 @attribute [ProducesContext("Shipment.PendingSignature", typeof(string))]
-@attribute [Outcome("CompleteShipment", DisplayName = "Sendung abschließen")]
 
 @if (_ready)
 {
@@ -48,6 +47,6 @@
 
 		_advancing = true;
 		Context.Set("Shipment.PendingSignature", _signatureName);
-		return AdvanceAsync("CompleteShipment");
+		return AdvanceAsync();
 	}
 }

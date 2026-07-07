@@ -1,0 +1,78 @@
+@namespace WorkflowEngine.Editor.Components.Editor
+@using WorkflowEngine.Editor.Model
+
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" class="arrow-head" />
+  </marker>
+</defs>
+
+@foreach (var edge in Edges)
+{
+  var geometry = ComputeGeometry(edge);
+  if (geometry is null)
+  {
+    continue;
+  }
+
+  var (start, control1, control2, end) = geometry.Value;
+  var isSelected = SelectedEdge is not null && SelectedEdge.Value.FromNodeId == edge.FromNodeId && SelectedEdge.Value.Outcome == edge.Outcome;
+  var pathData = $"M {start.X} {start.Y} C {control1.X} {control1.Y}, {control2.X} {control2.Y}, {end.X} {end.Y}";
+  var mid = new Point((start.X + end.X) / 2, (start.Y + end.Y) / 2);
+  var deleteStyle = isSelected ? "" : "display:none";
+
+  <g class="connection @(isSelected ? "selected" : "")">
+    <path d="@pathData" class="connection-hit-area"
+          @onclick="() => OnEdgeClicked.InvokeAsync((edge.FromNodeId, edge.Outcome))" @onclick:stopPropagation="true" />
+    <path d="@pathData" class="connection-line" marker-end="url(#arrow)" />
+
+    <circle cx="@mid.X" cy="@mid.Y" r="9" class="connection-delete-btn" style="@deleteStyle"
+            @onclick="() => OnDeleteClicked.InvokeAsync((edge.FromNodeId, edge.Outcome))" @onclick:stopPropagation="true" />
+    <text x="@mid.X" y="@(mid.Y + 4)" text-anchor="middle" class="connection-delete-icon" style="@deleteStyle"
+          @onclick="() => OnDeleteClicked.InvokeAsync((edge.FromNodeId, edge.Outcome))" @onclick:stopPropagation="true">✕</text>
+  </g>
+}
+
+@code {
+  private readonly record struct Point(double X, double Y);
+
+  [Parameter, EditorRequired]
+  public IReadOnlyList<EditorEdge> Edges { get; set; } = [];
+
+  [Parameter, EditorRequired]
+  public IReadOnlyList<NodeViewModel> Nodes { get; set; } = [];
+
+  [Parameter]
+  public (string FromNodeId, string? Outcome)? SelectedEdge { get; set; }
+
+  [Parameter]
+  public EventCallback<(string FromNodeId, string? Outcome)> OnEdgeClicked { get; set; }
+
+  [Parameter]
+  public EventCallback<(string FromNodeId, string? Outcome)> OnDeleteClicked { get; set; }
+
+  private (Point Start, Point Control1, Point Control2, Point End)? ComputeGeometry(EditorEdge edge)
+  {
+    var source = Nodes.FirstOrDefault(n => n.Node.Id == edge.FromNodeId);
+    var target = Nodes.FirstOrDefault(n => n.Node.Id == edge.ToNodeId);
+    if (source is null || target is null)
+    {
+      return null;
+    }
+
+    var outcomeName = edge.IsUnconditional ? NodeViewModel.NextOutcomeSentinel : edge.Outcome!;
+    var portIndex = source.OutcomePorts.ToList().FindIndex(o => o.Name == outcomeName);
+    if (portIndex < 0)
+    {
+      portIndex = 0;
+    }
+
+    var start = new Point(source.Node.X + source.Width, source.Node.Y + NodeMetrics.GetOutcomePortY(portIndex));
+    var end = new Point(target.Node.X, target.Node.Y + (target.Height / 2));
+    var controlOffset = Math.Max(60, Math.Abs(end.X - start.X) / 3);
+    var control1 = new Point(start.X + controlOffset, start.Y);
+    var control2 = new Point(end.X - controlOffset, end.Y);
+
+    return (start, control1, control2, end);
+  }
+}

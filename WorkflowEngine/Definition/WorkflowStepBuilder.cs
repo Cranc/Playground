@@ -110,6 +110,35 @@ public sealed class WorkflowStepBuilder
     return OnException((context, exception) => Task.FromResult(onException(context, exception)));
   }
 
+  /// <summary>Ordnet einen benannten Outcome (<see cref="StepResult.Branch"/>) einem Ziel-Step zu.</summary>
+  public WorkflowStepBuilder On(string outcome, string targetStep)
+  {
+    if (string.IsNullOrWhiteSpace(outcome))
+    {
+      throw new ArgumentException("Outcome darf nicht leer sein.", nameof(outcome));
+    }
+
+    if (string.IsNullOrWhiteSpace(targetStep))
+    {
+      throw new ArgumentException("Ziel-Step darf nicht leer sein.", nameof(targetStep));
+    }
+
+    _configuration.Transitions[outcome] = targetStep;
+    return this;
+  }
+
+  /// <summary>Legt den unbedingten Ziel-Step fest (greift, wenn kein Override/Outcome/NextStep vorliegt).</summary>
+  public WorkflowStepBuilder Next(string targetStep)
+  {
+    if (string.IsNullOrWhiteSpace(targetStep))
+    {
+      throw new ArgumentException("Ziel-Step darf nicht leer sein.", nameof(targetStep));
+    }
+
+    _configuration.Next = targetStep;
+    return this;
+  }
+
   public WorkflowStepBuilder WithComponent(Type componentType)
   {
     if (componentType is null)

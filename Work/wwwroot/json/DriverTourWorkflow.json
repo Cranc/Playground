@@ -2,16 +2,75 @@
   "name": "DriverTour",
   "startStep": "TourStart",
   "steps": [
-    { "name": "TourStart", "execute": "InitializeTourStep" },
-    { "name": "StopArrival", "component": "StopArrivalPage" },
-    { "name": "ShipmentSelection", "component": "ShipmentSelectionPage" },
-    { "name": "ShipmentStatus", "component": "ShipmentStatusPage" },
-    { "name": "Signature", "component": "SignaturePage" },
-    { "name": "CompleteShipment", "execute": "CompleteShipmentStep" },
-    { "name": "BulkShipmentStatus", "component": "BulkShipmentStatusPage" },
-    { "name": "CompleteBulkShipments", "execute": "CompleteBulkShipmentsStep" },
-    { "name": "StopComplete", "execute": "CompleteStopStep" },
-    { "name": "LoadCarrierBooking", "component": "LoadCarrierBookingPage", "execute": "AdvanceStopStep" },
-    { "name": "TourEnd", "component": "TourEndPage" }
+    {
+      "name": "TourStart",
+      "execute": "InitializeTourStep",
+      "next": "StopArrival"
+    },
+    {
+      "name": "StopArrival",
+      "component": "StopArrivalPage",
+      "transitions": {
+        "BulkShipmentStatus": "BulkShipmentStatus",
+        "ShipmentSelection": "ShipmentSelection"
+      }
+    },
+    {
+      "name": "ShipmentSelection",
+      "component": "ShipmentSelectionPage",
+      "transitions": {
+        "ShipmentStatus": "ShipmentStatus",
+        "StopComplete": "StopComplete"
+      }
+    },
+    {
+      "name": "ShipmentStatus",
+      "component": "ShipmentStatusPage",
+      "transitions": {
+        "Signature": "Signature",
+        "CompleteShipment": "CompleteShipment"
+      }
+    },
+    {
+      "name": "Signature",
+      "component": "SignaturePage",
+      "next": "CompleteShipment"
+    },
+    {
+      "name": "CompleteShipment",
+      "execute": "CompleteShipmentStep",
+      "transitions": {
+        "StopComplete": "StopComplete",
+        "ShipmentSelection": "ShipmentSelection"
+      }
+    },
+    {
+      "name": "BulkShipmentStatus",
+      "component": "BulkShipmentStatusPage",
+      "next": "CompleteBulkShipments"
+    },
+    {
+      "name": "CompleteBulkShipments",
+      "execute": "CompleteBulkShipmentsStep",
+      "next": "StopComplete"
+    },
+    {
+      "name": "StopComplete",
+      "execute": "CompleteStopStep",
+      "next": "LoadCarrierBooking"
+    },
+    {
+      "name": "LoadCarrierBooking",
+      "execute": "AdvanceStopStep",
+      "component": "LoadCarrierBookingPage",
+      "transitions": {
+        "StopArrival": "StopArrival",
+        "TourEnd": "TourEnd"
+      }
+    },
+    {
+      "name": "TourEnd",
+      "component": "TourEndPage"
+    }
   ]
 }

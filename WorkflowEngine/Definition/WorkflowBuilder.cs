@@ -85,6 +85,8 @@ public sealed class WorkflowBuilder
     public Func<WorkflowContext, Task>? After { get; set; }
     public int RetryCount { get; set; }
     public Func<WorkflowContext, Exception, Task<string?>>? OnException { get; set; }
+    public Dictionary<string, string> Transitions { get; } = new(StringComparer.Ordinal);
+    public string? Next { get; set; }
 
     public WorkflowStepDefinition ToDefinition()
     {
@@ -101,7 +103,9 @@ public sealed class WorkflowBuilder
         Before,
         After,
         RetryCount,
-        OnException);
+        OnException,
+        Transitions,
+        Next);
     }
   }
 }

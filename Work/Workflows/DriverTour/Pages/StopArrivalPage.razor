@@ -54,12 +54,12 @@
 	private Task StartBulkAsync()
 	{
 		_stop.ProcessingMode = "Bulk";
-		return AdvanceAsync("BulkShipmentStatus");
+		return AdvanceViaAsync("BulkShipmentStatus");
 	}
 
 	private Task StartIndividualAsync()
 	{
 		_stop.ProcessingMode = "Einzeln";
-		return AdvanceAsync("ShipmentSelection");
+		return AdvanceViaAsync("ShipmentSelection");
 	}
 }

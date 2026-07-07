@@ -11,7 +11,6 @@ namespace Work.Workflows.DriverTour.Steps;
 [WorkflowBlock(DisplayName = "Tour initialisieren", Category = "Fahrer-Tour", Description = "Erzeugt die Tourdaten, falls noch keine vorhanden sind.")]
 [ProducesContext("Tour", typeof(Tour))]
 [ProducesContext("Tour.CurrentStopIndex", typeof(int))]
-[Outcome("StopArrival", DisplayName = "Zum ersten Stopp")]
 public sealed class InitializeTourStep : IWorkflowStep
 {
   public Task<StepResult> ExecuteAsync(WorkflowContext context)
@@ -23,6 +22,6 @@ public sealed class InitializeTourStep : IWorkflowStep
       context.Set("Tour.CurrentStopIndex", 0);
     }
 
-    return Task.FromResult(StepResult.Ok("StopArrival"));
+    return Task.FromResult(StepResult.Ok());
   }
 }

@@ -1,0 +1,41 @@
+@page "/catalog"
+@rendermode InteractiveServer
+@using WorkflowEngine.Catalog
+@inject IBlockCatalog Catalog
+
+<PageTitle>Baustein-Katalog</PageTitle>
+
+<div class="page-header">
+  <h1>Baustein-Katalog</h1>
+  <a class="toolbar-link" href="/">Zur Übersicht</a>
+</div>
+
+<p class="catalog-count">@Catalog.Blocks.Count Bausteine gefunden.</p>
+
+<DxGrid Data="@Rows" ShowGroupPanel="false" ShowFilterRow="true" AllowSort="true" PageSize="50" CssClass="catalog-grid">
+  <Columns>
+    <DxGridDataColumn FieldName="@nameof(CatalogRow.Category)" Caption="Kategorie" Grouped="true" />
+    <DxGridDataColumn FieldName="@nameof(CatalogRow.DisplayName)" Caption="Baustein" />
+    <DxGridDataColumn FieldName="@nameof(CatalogRow.Alias)" Caption="Alias" />
+    <DxGridDataColumn FieldName="@nameof(CatalogRow.Kind)" Caption="Art" />
+    <DxGridDataColumn FieldName="@nameof(CatalogRow.Inputs)" Caption="Inputs" />
+    <DxGridDataColumn FieldName="@nameof(CatalogRow.Outputs)" Caption="Outputs" />
+    <DxGridDataColumn FieldName="@nameof(CatalogRow.Outcomes)" Caption="Outcomes" />
+  </Columns>
+</DxGrid>
+
+@code {
+  private sealed record CatalogRow(string Category, string DisplayName, string Alias, string Kind, string Inputs, string Outputs, string Outcomes);
+
+  private List<CatalogRow> Rows => Catalog.Blocks
+    .OrderBy(b => b.Category).ThenBy(b => b.DisplayName)
+    .Select(b => new CatalogRow(
+      b.Category,
+      b.DisplayName,
+      b.Alias,
+      b.Kind == BlockKind.Page ? "Page" : "Action",
+      string.Join(", ", b.Inputs.Select(p => p.Key)),
+      string.Join(", ", b.Outputs.Select(p => p.Key)),
+      string.Join(", ", b.Outcomes.Select(o => o.Name))))
+    .ToList();
+}

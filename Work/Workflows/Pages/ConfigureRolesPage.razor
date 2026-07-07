@@ -58,12 +58,12 @@
 	private Task GoToSummaryAsync()
 	{
 		Context.Set("User.Roles", _roles.ToList());
-		return AdvanceAsync("Summary");
+		return AdvanceViaAsync("Summary");
 	}
 
 	private Task GoToAdvancedAsync()
 	{
 		Context.Set("User.Roles", _roles.ToList());
-		return AdvanceAsync("Advanced");
+		return AdvanceViaAsync("Advanced");
 	}
 }

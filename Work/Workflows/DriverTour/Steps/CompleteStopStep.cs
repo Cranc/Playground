@@ -10,7 +10,6 @@ namespace Work.Workflows.DriverTour.Steps;
 [WorkflowBlock(DisplayName = "Stopp als abgeschlossen markieren", Category = "Fahrer-Tour", Description = "Markiert den aktuellen Stopp als abgeschlossen.")]
 [ConsumesContext("Tour", typeof(Tour))]
 [ConsumesContext("Tour.CurrentStopIndex", typeof(int))]
-[Outcome("LoadCarrierBooking", DisplayName = "Zur Lademittelbuchung")]
 public sealed class CompleteStopStep : IWorkflowStep
 {
   public Task<StepResult> ExecuteAsync(WorkflowContext context)
@@ -21,6 +20,6 @@ public sealed class CompleteStopStep : IWorkflowStep
 
     stop.IsCompleted = true;
 
-    return Task.FromResult(StepResult.Ok("LoadCarrierBooking"));
+    return Task.FromResult(StepResult.Ok());
   }
 }

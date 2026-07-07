@@ -10,7 +10,9 @@ public sealed class WorkflowStepDefinition
     Func<WorkflowContext, Task>? before,
     Func<WorkflowContext, Task>? after,
     int retryCount,
-    Func<WorkflowContext, Exception, Task<string?>>? onException)
+    Func<WorkflowContext, Exception, Task<string?>>? onException,
+    IReadOnlyDictionary<string, string>? transitions = null,
+    string? next = null)
   {
     Name = name;
     StepType = stepType;
@@ -20,6 +22,8 @@ public sealed class WorkflowStepDefinition
     After = after;
     RetryCount = retryCount;
     OnException = onException;
+    Transitions = transitions ?? new Dictionary<string, string>(StringComparer.Ordinal);
+    Next = next;
   }
 
   public string Name { get; }
@@ -37,4 +41,10 @@ public sealed class WorkflowStepDefinition
   public int RetryCount { get; }
 
   public Func<WorkflowContext, Exception, Task<string?>>? OnException { get; }
+
+  /// <summary>Ordnet benannte Outcomes (<see cref="StepResult.Outcome"/>) den jeweiligen Ziel-Steps zu.</summary>
+  public IReadOnlyDictionary<string, string> Transitions { get; }
+
+  /// <summary>Unbedingter Ziel-Step, falls weder Override noch Outcome noch <see cref="StepResult.NextStep"/> greifen.</summary>
+  public string? Next { get; }
 }

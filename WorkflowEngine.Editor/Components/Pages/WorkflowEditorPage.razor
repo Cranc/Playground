@@ -1,0 +1,234 @@
+@page "/editor/{Name}"
+@rendermode InteractiveServer
+@using WorkflowEngine.Catalog
+@using WorkflowEngine.Configuration
+@using WorkflowEngine.Editor.Components.Editor
+@using WorkflowEngine.Editor.Model
+@using WorkflowEngine.Editor.Services
+@using WorkflowEngine.Validation
+@inject IWorkflowFileService FileService
+@inject IBlockCatalog Catalog
+@inject WorkflowModelValidator Validator
+@inject WorkflowTypeRegistry Registry
+@inject IJSRuntime JS
+
+<PageTitle>Editor – @Name</PageTitle>
+
+<div class="editor-page">
+  <div class="editor-toolbar">
+    <h2>@Name</h2>
+    <div class="editor-toolbar-actions">
+      <span class="status-message @(_statusIsError ? "error" : "")">@_statusMessage</span>
+      <DxButton Text="Speichern" RenderStyle="ButtonRenderStyle.Primary" Click="SaveAsync" Enabled="@(_graph is not null)" />
+      <DxButton Text="Als JSON exportieren" RenderStyle="ButtonRenderStyle.Secondary" Click="DownloadAsync" Enabled="@(_graph is not null)" />
+      <a class="toolbar-link" href="/">Zur Übersicht</a>
+    </div>
+  </div>
+
+  @if (_graph is null)
+  {
+    <p class="editor-page-hint">@(_statusMessage ?? "Lade...")</p>
+  }
+  else
+  {
+    <div class="editor-layout">
+      <Toolbox Blocks="Catalog.Blocks" ArmedAlias="@_armedBlock?.Alias" ArmedDisplayName="@_armedBlock?.DisplayName"
+               OnBlockClicked="HandleBlockArmed" OnBlockDragStart="HandleBlockDragStart" />
+
+      <div class="editor-canvas-column">
+        <EditorCanvas Graph="_graph" Catalog="Catalog" Issues="_issues" ArmedBlock="_armedBlock"
+                      @bind-SelectedNodeId="_selectedNodeId" OnGraphChanged="RecomputeValidation"
+                      OnNodePlaced="HandleNodePlacedByDrag" />
+      </div>
+
+      <div class="editor-side-column">
+        <PropertyPanel SelectedNode="_selectedNode" Catalog="Catalog" AllNodeIds="_allNodeIds"
+                        IsStartNode="@(_selectedNodeId is not null && _selectedNodeId == _graph.StartNodeId)"
+                        OnChanged="RecomputeValidation" OnSetAsStart="SetAsStart" OnDeleteRequested="DeleteNode" />
+        <ValidationPanel Issues="_issues" OnIssueClicked="SelectFromIssue" />
+      </div>
+    </div>
+  }
+</div>
+
+@code {
+  private EditorGraph? _graph;
+  private string? _selectedNodeId;
+  private BlockDescriptor? _armedBlock;
+  private List<ValidationIssue> _issues = [];
+  private string? _statusMessage;
+  private bool _statusIsError;
+
+  [Parameter]
+  public string Name { get; set; } = string.Empty;
+
+  private EditorNode? _selectedNode => _graph?.Nodes.FirstOrDefault(n => n.Id == _selectedNodeId);
+
+  private List<string> _allNodeIds => _graph?.Nodes.Select(n => n.Id).ToList() ?? [];
+
+  protected override void OnParametersSet()
+  {
+    if (_graph is null || !string.Equals(_graph.Name, Name, StringComparison.Ordinal))
+    {
+      LoadGraph();
+    }
+  }
+
+  private void LoadGraph()
+  {
+    try
+    {
+      var (model, layout) = FileService.Load(Name);
+      var graph = EditorGraphMapper.ToEditorGraph(model, layout);
+
+      var loadedIds = layout?.Nodes.Select(n => n.StepName).ToHashSet(StringComparer.Ordinal)
+        ?? new HashSet<string>(StringComparer.Ordinal);
+      var missing = graph.Nodes.Select(n => n.Id).Where(id => !loadedIds.Contains(id)).ToHashSet(StringComparer.Ordinal);
+      AutoLayoutEngine.ApplyMissingPositions(graph, missing);
+
+      _graph = graph;
+      _selectedNodeId = null;
+      _armedBlock = null;
+      SetStatus(null, isError: false);
+      RecomputeValidation();
+    }
+    catch (FileNotFoundException)
+    {
+      // Neues Modul: noch keine Datei auf der Platte -> leere Canvas, erster "Speichern"-Klick legt sie an.
+      _graph = new EditorGraph { Name = Name };
+      _selectedNodeId = null;
+      _armedBlock = null;
+      SetStatus($"Neues Modul '{Name}' — noch nicht gespeichert.", isError: false);
+      RecomputeValidation();
+    }
+    catch (Exception ex)
+    {
+      _graph = null;
+      SetStatus($"Fehler beim Laden von '{Name}': {ex.Message}", isError: true);
+    }
+  }
+
+  private void RecomputeValidation()
+  {
+    if (_graph is null)
+    {
+      _issues = [];
+      return;
+    }
+
+    var (model, _) = EditorGraphMapper.ToConfiguration(_graph);
+    _issues = Validator.Validate(model, Catalog).ToList();
+  }
+
+  private void HandleBlockArmed(BlockDescriptor block)
+  {
+    _armedBlock = _armedBlock?.Alias == block.Alias ? null : block;
+  }
+
+  /// <summary>Anders als HandleBlockArmed kein Toggle: Drag-Start setzt den Baustein immer scharf.</summary>
+  private void HandleBlockDragStart(BlockDescriptor block)
+  {
+    _armedBlock = block;
+  }
+
+  /// <summary>Nur nach einem Drop aufgerufen, damit Klick-Platzierung weiterhin mehrfach hintereinander funktioniert.</summary>
+  private void HandleNodePlacedByDrag()
+  {
+    _armedBlock = null;
+  }
+
+  private void SetAsStart(string nodeId)
+  {
+    if (_graph is null)
+    {
+      return;
+    }
+
+    _graph.StartNodeId = nodeId;
+    RecomputeValidation();
+  }
+
+  private void DeleteNode(string nodeId)
+  {
+    if (_graph is null)
+    {
+      return;
+    }
+
+    _graph.RemoveNode(nodeId);
+    if (_selectedNodeId == nodeId)
+    {
+      _selectedNodeId = null;
+    }
+
+    RecomputeValidation();
+  }
+
+  private void SelectFromIssue(string? stepName)
+  {
+    if (stepName is not null)
+    {
+      _selectedNodeId = stepName;
+    }
+  }
+
+  private async Task SaveAsync()
+  {
+    if (_graph is null)
+    {
+      return;
+    }
+
+    var (model, layout) = EditorGraphMapper.ToConfiguration(_graph);
+    var issues = Validator.Validate(model, Catalog);
+    _issues = issues.ToList();
+
+    if (issues.Any(i => i.Severity == ValidationSeverity.Error))
+    {
+      SetStatus("Speichern abgebrochen: Es gibt noch Fehler (siehe Validierung).", isError: true);
+      return;
+    }
+
+    // Zusätzliches Gate über die volle Factory — aber nur, wenn keine Hook-Aliase (Before/After/
+    // OnException) im Spiel sind. Hooks sind app-spezifischer Code und nicht Teil des
+    // Katalogs (siehe Program.cs); ein Fehlschlag hier wäre für solche Modelle ein Fehlalarm.
+    var usesHooks = model.Steps.Any(s =>
+      !string.IsNullOrWhiteSpace(s.Before) || !string.IsNullOrWhiteSpace(s.After) || !string.IsNullOrWhiteSpace(s.OnException));
+
+    if (!usesHooks)
+    {
+      try
+      {
+        new WorkflowDefinitionFactory().Create(model, Registry);
+      }
+      catch (Exception ex)
+      {
+        SetStatus($"Speichern abgebrochen: {ex.Message}", isError: true);
+        return;
+      }
+    }
+
+    FileService.Save(Name, model, layout);
+    SetStatus($"Gespeichert: {Name}.json + {Name}.layout.json", isError: false);
+  }
+
+  private async Task DownloadAsync()
+  {
+    if (_graph is null)
+    {
+      return;
+    }
+
+    var (model, _) = EditorGraphMapper.ToConfiguration(_graph);
+    var json = new JsonWorkflowConfigurationWriter().Write(model);
+
+    await using var module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/editor.js");
+    await module.InvokeVoidAsync("downloadFile", $"{Name}.json", json);
+  }
+
+  private void SetStatus(string? message, bool isError)
+  {
+    _statusMessage = message;
+    _statusIsError = isError;
+  }
+}

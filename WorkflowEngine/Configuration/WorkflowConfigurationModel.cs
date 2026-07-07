@@ -55,4 +55,12 @@ public sealed class WorkflowStepConfigurationModel
   /// Bequemer Kurzweg, wenn kein eigener Handler (<see cref="OnException"/>) nötig ist.
   /// </summary>
   public string? OnExceptionNextStep { get; set; }
+
+  /// <summary>Ordnet benannte Outcomes (<see cref="StepResult.Outcome"/>) den jeweiligen Ziel-Steps zu. Optional.</summary>
+  public Dictionary<string, string> Transitions { get; set; } = new();
+
+  /// <summary>
+  /// Unbedingter Ziel-Step, falls weder Outcome noch <see cref="StepResult.NextStep"/> einen Step liefern. Optional.
+  /// </summary>
+  public string? Next { get; set; }
 }

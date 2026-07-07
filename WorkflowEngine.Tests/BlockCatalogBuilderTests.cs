@@ -47,6 +47,17 @@ public class BlockCatalogBuilderTests
   }
 
   [Fact]
+  public void Build_UnconditionalActionStepsHaveNoOutcomes()
+  {
+    var catalog = BuildWorkCatalog();
+
+    // InitializeTourStep hat genau einen Nachfolger (StopArrival) und wird deshalb per
+    // Next/unbedingter Transition verdrahtet, nicht per [Outcome] (siehe Phase 2).
+    Assert.True(catalog.TryGet("InitializeTourStep", out var descriptor));
+    Assert.Empty(descriptor.Outcomes);
+  }
+
+  [Fact]
   public void Build_AssignsImplicitDefaultOutcomeForPagesWithoutExplicitOutcomes()
   {
     var catalog = BuildWorkCatalog();

@@ -38,7 +38,7 @@ public sealed class CompleteShipmentStep : IWorkflowStep
     context.Data.Remove("Shipment.PendingSignature");
     context.Data.Remove("Tour.CurrentShipmentId");
 
-    var nextStep = stop.AllShipmentsCompleted ? "StopComplete" : "ShipmentSelection";
-    return Task.FromResult(StepResult.Ok(nextStep, result: shipment));
+    var outcome = stop.AllShipmentsCompleted ? "StopComplete" : "ShipmentSelection";
+    return Task.FromResult(StepResult.Branch(outcome, result: shipment));
   }
 }

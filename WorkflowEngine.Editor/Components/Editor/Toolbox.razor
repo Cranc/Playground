@@ -1,0 +1,44 @@
+@namespace WorkflowEngine.Editor.Components.Editor
+@using WorkflowEngine.Catalog
+
+<div class="toolbox">
+  <h3>Bausteine</h3>
+  <p class="toolbox-hint">
+    @(ArmedAlias is null
+      ? "Baustein auf die Fläche ziehen oder anklicken und dann auf die Fläche klicken."
+      : $"'{ArmedDisplayName}' ausgewählt — Klick auf die Fläche platziert einen weiteren; erneuter Klick hier bricht ab.")
+  </p>
+  @foreach (var group in Blocks.GroupBy(b => b.Category).OrderBy(g => g.Key))
+  {
+    <div class="toolbox-group">
+      <h4>@group.Key</h4>
+      @foreach (var block in group.OrderBy(b => b.DisplayName))
+      {
+        <div class="toolbox-item @(block.Kind == BlockKind.Page ? "kind-page" : "kind-action") @(ArmedAlias == block.Alias ? "armed" : "")"
+             draggable="true"
+             @ondragstart="() => OnBlockDragStart.InvokeAsync(block)"
+             @onclick="() => OnBlockClicked.InvokeAsync(block)">
+          <span class="toolbox-item-kind">@(block.Kind == BlockKind.Page ? "Page" : "Action")</span>
+          <span class="toolbox-item-name">@block.DisplayName</span>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@code {
+  [Parameter, EditorRequired]
+  public IReadOnlyList<BlockDescriptor> Blocks { get; set; } = [];
+
+  [Parameter]
+  public string? ArmedAlias { get; set; }
+
+  [Parameter]
+  public string? ArmedDisplayName { get; set; }
+
+  [Parameter]
+  public EventCallback<BlockDescriptor> OnBlockClicked { get; set; }
+
+  [Parameter]
+  public EventCallback<BlockDescriptor> OnBlockDragStart { get; set; }
+}

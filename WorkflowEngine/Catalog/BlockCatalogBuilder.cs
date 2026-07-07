@@ -92,7 +92,7 @@ public sealed class BlockCatalogBuilder
 
     if (outcomes.Count == 0 && kind == BlockKind.Page)
     {
-      outcomes.Add(new OutcomePort("Default", "Weiter"));
+      outcomes.Add(new OutcomePort("Default", "Weiter", IsImplicit: true));
     }
 
     return new BlockDescriptor(alias, kind, displayName, category, attribute?.Description, type, inputs, outputs, outcomes);

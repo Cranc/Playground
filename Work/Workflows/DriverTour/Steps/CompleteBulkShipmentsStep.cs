@@ -11,7 +11,6 @@ namespace Work.Workflows.DriverTour.Steps;
 [ConsumesContext("Tour.CurrentStopIndex", typeof(int))]
 [ConsumesContext("Stop.BulkStatus", typeof(ShipmentStatus))]
 [ConsumesContext("Stop.BulkSignature", typeof(string), Required = false)]
-[Outcome("StopComplete", DisplayName = "Stopp abschließen")]
 public sealed class CompleteBulkShipmentsStep : IWorkflowStep
 {
   public Task<StepResult> ExecuteAsync(WorkflowContext context)
@@ -34,6 +33,6 @@ public sealed class CompleteBulkShipmentsStep : IWorkflowStep
     context.Data.Remove("Stop.BulkStatus");
     context.Data.Remove("Stop.BulkSignature");
 
-    return Task.FromResult(StepResult.Ok("StopComplete"));
+    return Task.FromResult(StepResult.Ok());
   }
 }

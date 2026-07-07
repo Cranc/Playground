@@ -47,11 +47,11 @@
 	private Task ContinueAsync()
 	{
 		Context.Set("Finish.TriggerError", SimulateFinishError);
-		return AdvanceAsync("Finish");
+		return AdvanceViaAsync("Finish");
 	}
 
 	private Task GoToSummaryAsync()
 	{
-		return AdvanceAsync("Summary");
+		return AdvanceViaAsync("Summary");
 	}
 }

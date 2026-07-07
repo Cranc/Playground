@@ -7,7 +7,6 @@
 @attribute [ConsumesContext("Tour.CurrentStopIndex", typeof(int))]
 @attribute [ProducesContext("Stop.BulkStatus", typeof(ShipmentStatus))]
 @attribute [ProducesContext("Stop.BulkSignature", typeof(string))]
-@attribute [Outcome("CompleteBulkShipments", DisplayName = "Alle Sendungen abschließen")]
 
 <div class="card p-3">
 	<h4>Stop-Abschluss – @_stop.Name</h4>
@@ -56,6 +55,6 @@
 
 		Context.Set("Stop.BulkStatus", _selectedOption.Status);
 		Context.Set("Stop.BulkSignature", _signatureName);
-		return AdvanceAsync("CompleteBulkShipments");
+		return AdvanceAsync();
 	}
 }

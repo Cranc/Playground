@@ -16,6 +16,12 @@ public abstract class WorkflowStepComponent : ComponentBase, IWorkflowPageCompon
     return Runner.AdvanceAsync(nextStep);
   }
 
+  /// <summary>Bewegt den Workflow über einen benannten Outcome weiter (siehe [Outcome]-Attribut).</summary>
+  protected Task AdvanceViaAsync(string outcome)
+  {
+    return Runner.AdvanceByOutcomeAsync(outcome);
+  }
+
   protected Task GoBackAsync()
   {
     return Runner.GoBackAsync();

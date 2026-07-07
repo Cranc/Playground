@@ -1,14 +1,475 @@
+:root {
+    --accent: #2563eb;
+    --accent-dark: #1d4ed8;
+    --accent-bg: #eff6ff;
+    --danger: #dc2626;
+    --danger-bg: #fef2f2;
+    --warning: #d97706;
+    --warning-bg: #fffbeb;
+    --success: #16a34a;
+    --success-bg: #f0fdf4;
+    --border: #e5e7eb;
+    --border-strong: #d1d5db;
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --surface: #ffffff;
+    --page-bg: #f3f4f6;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: sans-serif;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    color: var(--text);
+    background: var(--page-bg);
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+a:hover {
+    color: var(--accent-dark);
+    text-decoration: underline;
+}
+
+h1 {
+    font-size: 1.5rem;
     margin: 0;
 }
 
+/* --- Top bar / brand --- */
 .top-row {
-    background-color: #f7f7f7;
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    padding: 0.6rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+.app-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text);
+}
+.app-brand:hover {
+    text-decoration: none;
+    color: var(--text);
+}
+.app-brand-icon {
+    font-size: 1.2rem;
+    color: var(--accent);
+}
+.top-row-nav a {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+.top-row-nav a:hover {
+    color: var(--accent);
 }
 
 .content {
-    padding: 1rem;
+    padding: 1.25rem 1.5rem;
+}
+
+/* --- Shared page header --- */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.toolbar-link {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* --- Workflow list (Home) --- */
+.empty-hint {
+    color: var(--text-muted);
+}
+.workflow-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+.workflow-card {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1rem 1.1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    color: var(--text);
+    font-weight: 500;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease;
+}
+.workflow-card:hover {
+    text-decoration: none;
+    border-color: var(--accent);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+    transform: translateY(-1px);
+}
+.workflow-card-icon {
+    font-size: 1.1rem;
+    color: var(--accent);
+}
+.catalog-link {
+    margin-top: 1.5rem;
+}
+
+/* --- New module dialog --- */
+.new-module-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.new-module-form label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.field-error {
+    color: var(--danger);
+    font-size: 0.8rem;
+    margin: 0;
+}
+.new-module-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+/* --- Catalog page --- */
+.catalog-count {
+    color: var(--text-muted);
+    margin-top: -0.5rem;
+}
+.catalog-grid {
+    margin-top: 0.5rem;
+}
+
+/* --- Editor page shell --- */
+.editor-page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 57px);
+}
+.editor-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    flex-shrink: 0;
+}
+.editor-toolbar h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+.editor-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.status-message {
+    font-size: 0.85rem;
+    color: var(--success);
+}
+.status-message.error {
+    color: var(--danger);
+}
+.editor-page-hint {
+    padding: 1rem 1.25rem;
+    color: var(--text-muted);
+}
+
+.editor-layout {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+/* --- Toolbox --- */
+.toolbox {
+    width: 230px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    padding: 0.9rem;
+    background: var(--surface);
+}
+.toolbox h3 {
+    margin-top: 0;
+    font-size: 0.95rem;
+}
+.toolbox-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.35;
+}
+.toolbox-group {
+    margin-bottom: 0.75rem;
+}
+.toolbox-group h4 {
+    margin-bottom: 0.35rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.toolbox-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.45rem 0.6rem;
+    margin-bottom: 0.35rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    cursor: grab;
+    font-size: 0.85rem;
+    box-shadow: 0 1px 1px rgba(15, 23, 42, 0.03);
+    transition: border-color 0.1s ease, box-shadow 0.1s ease;
+}
+.toolbox-item:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow);
+}
+.toolbox-item:active {
+    cursor: grabbing;
+}
+.toolbox-item.armed {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+}
+.toolbox-item.kind-page .toolbox-item-kind {
+    color: var(--accent);
+}
+.toolbox-item.kind-action .toolbox-item-kind {
+    color: var(--warning);
+}
+.toolbox-item-kind {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* --- Canvas --- */
+.editor-canvas-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.editor-canvas-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    color: var(--accent);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.zoom-controls .zoom-btn {
+    min-width: 1.9rem;
+    padding: 0.15rem 0.5rem;
+}
+.editor-canvas-container {
+    flex: 1;
+    overflow: auto;
+    background: var(--page-bg);
+}
+.editor-canvas-background {
+    fill: var(--page-bg);
+}
+.editor-canvas-background.placing {
+    fill: var(--accent-bg);
+    cursor: copy;
+}
+
+/* --- Block node --- */
+.block-node-body {
+    fill: var(--surface);
+    stroke: var(--border-strong);
+    stroke-width: 1.5;
+    filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.12));
+}
+.block-node.selected .block-node-body {
+    stroke: var(--accent);
+    stroke-width: 2.5;
+}
+.block-node.has-error .block-node-body {
+    stroke: var(--danger);
+    stroke-width: 2.5;
+}
+.block-node.has-warning .block-node-body {
+    stroke: var(--warning);
+}
+.block-node-title {
+    font-size: 12px;
+    font-weight: 600;
+    fill: var(--text);
+}
+.block-node-subtitle {
+    font-size: 9px;
+    fill: var(--text-muted);
+}
+.start-badge {
+    font-size: 8px;
+    font-weight: 700;
+    fill: var(--success);
+}
+.port-label {
+    font-size: 9px;
+    fill: #444;
+}
+.port {
+    cursor: pointer;
+}
+.input-port circle {
+    fill: #bbb;
+}
+.outcome-port circle {
+    fill: var(--accent);
+}
+.outcome-port.linking circle {
+    fill: var(--warning);
+    r: 7;
+}
+.outcome-port:hover circle {
+    fill: var(--accent-dark);
+}
+.delete-btn {
+    font-size: 11px;
+    fill: var(--danger);
+    cursor: pointer;
+    opacity: 0.6;
+}
+.delete-btn:hover {
+    opacity: 1;
+}
+
+/* --- Connections --- */
+.connection-line {
+    fill: none;
+    stroke: #9aa3af;
+    stroke-width: 1.5;
+}
+.connection.selected .connection-line {
+    stroke: var(--accent);
+    stroke-width: 2.5;
+}
+.connection-hit-area {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 14;
+    cursor: pointer;
+}
+.arrow-head {
+    fill: #9aa3af;
+}
+.connection-delete-btn {
+    fill: var(--danger);
+    cursor: pointer;
+}
+.connection-delete-icon {
+    fill: white;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+/* --- Side column (Property + Validation panels) --- */
+.editor-side-column {
+    width: 320px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+}
+.property-panel, .validation-panel {
+    padding: 0.9rem;
+}
+.property-panel {
+    border-bottom: 1px solid var(--border);
+}
+.property-panel h3, .validation-panel h3 {
+    margin-top: 0;
+    font-size: 0.95rem;
+}
+.property-field {
+    margin-bottom: 0.7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.property-field label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+.property-panel-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+.start-indicator {
+    color: var(--success);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.validation-ok {
+    color: var(--success);
+}
+.validation-summary {
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+.validation-summary.error {
+    color: var(--danger);
+}
+.validation-summary.warning {
+    color: var(--warning);
+}
+.validation-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.85rem 0;
+}
+.validation-list li {
+    padding: 0.4rem 0.55rem;
+    margin-bottom: 0.25rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+.issue-error {
+    background: var(--danger-bg);
+    color: #991b1b;
+}
+.issue-warning {
+    background: var(--warning-bg);
+    color: #92400e;
 }

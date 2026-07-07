@@ -2,18 +2,51 @@
   "name": "UserWizard",
   "startStep": "Start",
   "steps": [
-    { "name": "Start", "component": "StartPage" },
-    { "name": "SelectUser", "component": "SelectUserPage" },
+    {
+      "name": "Start",
+      "component": "StartPage",
+      "transitions": {
+        "SelectUser": "SelectUser",
+        "CreateUser": "CreateUser"
+      }
+    },
+    {
+      "name": "SelectUser",
+      "component": "SelectUserPage",
+      "next": "ConfigureRoles"
+    },
     {
       "name": "CreateUser",
       "before": "CreateUser.InitAttempts",
-      "component": "CreateUserPage",
       "execute": "CreateUserStep",
-      "after": "CreateUser.StampLastRun"
+      "component": "CreateUserPage",
+      "after": "CreateUser.StampLastRun",
+      "next": "ConfigureRoles"
     },
-    { "name": "ConfigureRoles", "component": "ConfigureRolesPage" },
-    { "name": "Summary", "component": "SummaryPage" },
-    { "name": "Advanced", "component": "AdvancedPage" },
+    {
+      "name": "ConfigureRoles",
+      "component": "ConfigureRolesPage",
+      "transitions": {
+        "Summary": "Summary",
+        "Advanced": "Advanced"
+      }
+    },
+    {
+      "name": "Summary",
+      "component": "SummaryPage",
+      "transitions": {
+        "Finish": "Finish",
+        "Advanced": "Advanced"
+      }
+    },
+    {
+      "name": "Advanced",
+      "component": "AdvancedPage",
+      "transitions": {
+        "Finish": "Finish",
+        "Summary": "Summary"
+      }
+    },
     {
       "name": "Finish",
       "execute": "FinishStep",

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "workflow-editor",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "WorkflowEngine.Editor/WorkflowEngine.Editor.csproj", "--urls", "http://127.0.0.1:5266"],
+      "port": 5266
+    },
+    {
+      "name": "work-app",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "Work/Work.csproj", "--urls", "http://127.0.0.1:5256"],
+      "port": 5256
+    }
+  ]
+}

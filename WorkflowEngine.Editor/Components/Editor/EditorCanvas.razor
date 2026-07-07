@@ -1,0 +1,272 @@
+@namespace WorkflowEngine.Editor.Components.Editor
+@using WorkflowEngine.Catalog
+@using WorkflowEngine.Editor.Model
+@using WorkflowEngine.Validation
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<div class="editor-canvas-toolbar">
+  <span>
+    @if (ArmedBlock is not null)
+    {
+      <text>'@ArmedBlock.DisplayName' platzieren: Klick auf die Fläche.</text>
+    }
+    else if (_linkingFromNodeId is not null)
+    {
+      <text>Ziel-Baustein auswählen (Klick auf leere Fläche zum Abbrechen).</text>
+    }
+  </span>
+  <div class="zoom-controls">
+    <DxButton CssClass="zoom-btn" Text="－" RenderStyle="ButtonRenderStyle.Secondary" Click="ZoomOut" />
+    <span>@((_zoom * 100).ToString("F0"))%</span>
+    <DxButton CssClass="zoom-btn" Text="＋" RenderStyle="ButtonRenderStyle.Secondary" Click="ZoomIn" />
+  </div>
+</div>
+
+<div class="editor-canvas-container">
+  <svg class="editor-canvas" width="3000" height="2000" style="transform: scale(@_zoom.ToString(System.Globalization.CultureInfo.InvariantCulture)); transform-origin: 0 0;">
+
+    <rect x="0" y="0" width="3000" height="2000"
+          class="editor-canvas-background @(ArmedBlock is not null ? "placing" : "")"
+          @onclick="HandleBackgroundClicked"
+          @ondragover="HandleDragOver" @ondragover:preventDefault="true"
+          @ondrop="HandleDrop" />
+
+    <ConnectionLayer Edges="Graph.Edges" Nodes="_viewModels" SelectedEdge="_selectedEdge"
+                      OnEdgeClicked="HandleEdgeClicked" OnDeleteClicked="HandleEdgeDeleteClicked" />
+
+    @foreach (var vm in _viewModels)
+    {
+      <BlockNode @key="vm.Node.Id" ViewModel="vm"
+                 IsSelected="@(vm.Node.Id == SelectedNodeId)"
+                 IsStart="@(vm.Node.Id == Graph.StartNodeId)"
+                 LinkingFromNodeId="@_linkingFromNodeId"
+                 LinkingOutcome="@_linkingOutcome"
+                 JsModule="_jsModule"
+                 OnBodyClicked="HandleNodeBodyClicked"
+                 OnOutcomePortClicked="HandleOutcomePortClicked"
+                 OnDeleteClicked="HandleNodeDeleteClicked"
+                 OnMoved="HandleNodeMoved" />
+    }
+  </svg>
+</div>
+
+@code {
+  private IJSObjectReference? _jsModule;
+  private List<NodeViewModel> _viewModels = [];
+  private string? _linkingFromNodeId;
+  private string? _linkingOutcome;
+  private (string FromNodeId, string? Outcome)? _selectedEdge;
+  private double _zoom = 1.0;
+
+  [Parameter, EditorRequired]
+  public EditorGraph Graph { get; set; } = null!;
+
+  [Parameter, EditorRequired]
+  public IBlockCatalog Catalog { get; set; } = null!;
+
+  [Parameter, EditorRequired]
+  public IReadOnlyList<ValidationIssue> Issues { get; set; } = [];
+
+  [Parameter]
+  public string? SelectedNodeId { get; set; }
+
+  [Parameter]
+  public EventCallback<string?> SelectedNodeIdChanged { get; set; }
+
+  /// <summary>Der in der Toolbox "bewaffnete" Baustein; ein Klick auf die Fläche platziert ihn dort.</summary>
+  [Parameter]
+  public BlockDescriptor? ArmedBlock { get; set; }
+
+  [Parameter]
+  public EventCallback OnGraphChanged { get; set; }
+
+  /// <summary>Wird nach einem per Drag & Drop platzierten Node ausgelöst (nicht bei Klick-Platzierung).</summary>
+  [Parameter]
+  public EventCallback OnNodePlaced { get; set; }
+
+  protected override void OnParametersSet()
+  {
+    _viewModels = NodeViewModelBuilder.Build(Graph, Catalog, Issues);
+  }
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (firstRender)
+    {
+      _jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/editor.js");
+      StateHasChanged();
+    }
+  }
+
+  private async Task HandleBackgroundClicked(MouseEventArgs e)
+  {
+    if (ArmedBlock is not null)
+    {
+      await PlaceNode(ArmedBlock, e.OffsetX, e.OffsetY);
+      return;
+    }
+
+    var wasLinking = _linkingFromNodeId is not null;
+    _linkingFromNodeId = null;
+    _linkingOutcome = null;
+    _selectedEdge = null;
+
+    if (!wasLinking)
+    {
+      await SelectedNodeIdChanged.InvokeAsync(null);
+    }
+  }
+
+  private void HandleDragOver()
+  {
+    // No-op: die Methode existiert nur, damit @ondragover:preventDefault das Drop-Event freigibt.
+  }
+
+  private async Task HandleDrop(DragEventArgs e)
+  {
+    if (ArmedBlock is null)
+    {
+      return;
+    }
+
+    await PlaceNode(ArmedBlock, e.OffsetX, e.OffsetY);
+    await OnNodePlaced.InvokeAsync();
+  }
+
+  private async Task PlaceNode(BlockDescriptor descriptor, double x, double y)
+  {
+    var nodeId = GenerateUniqueNodeId(descriptor.Alias);
+    var node = new EditorNode { Id = nodeId, X = x, Y = y };
+
+    if (descriptor.Kind == BlockKind.Action)
+    {
+      node.ExecuteAlias = descriptor.Alias;
+    }
+    else
+    {
+      node.ComponentAlias = descriptor.Alias;
+    }
+
+    Graph.Nodes.Add(node);
+    Graph.StartNodeId ??= nodeId;
+
+    await NotifyChanged();
+  }
+
+  private string GenerateUniqueNodeId(string alias)
+  {
+    if (Graph.Nodes.All(n => n.Id != alias))
+    {
+      return alias;
+    }
+
+    var suffix = 2;
+    while (Graph.Nodes.Any(n => n.Id == $"{alias}_{suffix}"))
+    {
+      suffix++;
+    }
+
+    return $"{alias}_{suffix}";
+  }
+
+  private async Task HandleNodeMoved((string NodeId, double X, double Y) args)
+  {
+    var node = Graph.Nodes.FirstOrDefault(n => n.Id == args.NodeId);
+    if (node is null)
+    {
+      return;
+    }
+
+    node.X = args.X;
+    node.Y = args.Y;
+    await NotifyChanged();
+  }
+
+  private async Task HandleNodeBodyClicked(string nodeId)
+  {
+    if (_linkingFromNodeId is not null)
+    {
+      await CompleteLink(nodeId);
+      return;
+    }
+
+    _selectedEdge = null;
+    await SelectedNodeIdChanged.InvokeAsync(nodeId);
+  }
+
+  private void HandleOutcomePortClicked((string NodeId, string Outcome) args)
+  {
+    if (_linkingFromNodeId == args.NodeId && _linkingOutcome == args.Outcome)
+    {
+      _linkingFromNodeId = null;
+      _linkingOutcome = null;
+      return;
+    }
+
+    _linkingFromNodeId = args.NodeId;
+    _linkingOutcome = args.Outcome;
+  }
+
+  private async Task CompleteLink(string targetNodeId)
+  {
+    var fromNodeId = _linkingFromNodeId!;
+    var normalizedOutcome = _linkingOutcome == NodeViewModel.NextOutcomeSentinel ? null : _linkingOutcome;
+
+    Graph.Edges.RemoveAll(e => e.FromNodeId == fromNodeId && e.Outcome == normalizedOutcome);
+    Graph.Edges.Add(new EditorEdge { FromNodeId = fromNodeId, Outcome = normalizedOutcome, ToNodeId = targetNodeId });
+
+    _linkingFromNodeId = null;
+    _linkingOutcome = null;
+
+    await NotifyChanged();
+  }
+
+  private async Task HandleNodeDeleteClicked(string nodeId)
+  {
+    Graph.RemoveNode(nodeId);
+
+    if (SelectedNodeId == nodeId)
+    {
+      await SelectedNodeIdChanged.InvokeAsync(null);
+    }
+
+    await NotifyChanged();
+  }
+
+  private void HandleEdgeClicked((string FromNodeId, string? Outcome) edge)
+  {
+    _selectedEdge = _selectedEdge == edge ? null : edge;
+  }
+
+  private async Task HandleEdgeDeleteClicked((string FromNodeId, string? Outcome) edge)
+  {
+    Graph.Edges.RemoveAll(e => e.FromNodeId == edge.FromNodeId && e.Outcome == edge.Outcome);
+    _selectedEdge = null;
+    await NotifyChanged();
+  }
+
+  private void ZoomIn() => _zoom = Math.Min(2.0, Math.Round(_zoom + 0.1, 2));
+
+  private void ZoomOut() => _zoom = Math.Max(0.4, Math.Round(_zoom - 0.1, 2));
+
+  private async Task NotifyChanged()
+  {
+    _viewModels = NodeViewModelBuilder.Build(Graph, Catalog, Issues);
+    await OnGraphChanged.InvokeAsync();
+  }
+
+  public async ValueTask DisposeAsync()
+  {
+    if (_jsModule is not null)
+    {
+      try
+      {
+        await _jsModule.DisposeAsync();
+      }
+      catch (JSDisconnectedException)
+      {
+      }
+    }
+  }
+}

@@ -68,7 +68,7 @@
 		Context.Set("Shipment.PendingStatus", _selectedOption.Status);
 
 		return _selectedOption.RequiresSignature
-			? AdvanceAsync("Signature")
-			: AdvanceAsync("CompleteShipment");
+			? AdvanceViaAsync("Signature")
+			: AdvanceViaAsync("CompleteShipment");
 	}
 }

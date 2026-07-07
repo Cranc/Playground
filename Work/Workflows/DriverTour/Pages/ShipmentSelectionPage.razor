@@ -56,11 +56,11 @@
 	private Task SelectShipmentAsync(string shipmentId)
 	{
 		Context.Set("Tour.CurrentShipmentId", shipmentId);
-		return AdvanceAsync("ShipmentStatus");
+		return AdvanceViaAsync("ShipmentStatus");
 	}
 
 	private Task CompleteStopAsync()
 	{
-		return AdvanceAsync("StopComplete");
+		return AdvanceViaAsync("StopComplete");
 	}
 }

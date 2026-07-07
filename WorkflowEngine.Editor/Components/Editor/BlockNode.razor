@@ -1,0 +1,134 @@
+@namespace WorkflowEngine.Editor.Components.Editor
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<g @ref="_groupRef"
+   transform="translate(@ViewModel.Node.X, @ViewModel.Node.Y)"
+   class="block-node @(IsSelected ? "selected" : "") @(ViewModel.HasError ? "has-error" : "") @(ViewModel.HasWarning ? "has-warning" : "")">
+
+  <rect width="@ViewModel.Width" height="@ViewModel.Height" rx="8" class="block-node-body"
+        @onclick="() => OnBodyClicked.InvokeAsync(ViewModel.Node.Id)" @onclick:stopPropagation="true" />
+
+  <text x="8" y="14" class="start-badge" style="@(IsStart ? "" : "display:none")">START</text>
+
+  <text x="@(ViewModel.Width / 2)" y="20" text-anchor="middle" class="block-node-title">@ViewModel.Title</text>
+  <text x="@(ViewModel.Width / 2)" y="34" text-anchor="middle" class="block-node-subtitle">@ViewModel.Subtitle</text>
+
+  @for (var i = 0; i < ViewModel.InputLabels.Count; i++)
+  {
+    var y = NodeMetrics.GetInputPortY(i);
+    <g class="port input-port">
+      <circle cx="0" cy="@y" r="4" />
+      <text x="8" y="@(y + 4)" class="port-label">@ViewModel.InputLabels[i]</text>
+    </g>
+  }
+
+  @for (var i = 0; i < ViewModel.OutcomePorts.Count; i++)
+  {
+    var outcome = ViewModel.OutcomePorts[i];
+    var y = NodeMetrics.GetOutcomePortY(i);
+    <g class="port outcome-port @(IsLinkingFromThisPort(outcome.Name) ? "linking" : "")"
+       @onclick="() => OnOutcomePortClicked.InvokeAsync((ViewModel.Node.Id, outcome.Name))" @onclick:stopPropagation="true">
+      <circle cx="@ViewModel.Width" cy="@y" r="5" />
+      <text x="@(ViewModel.Width - 10)" y="@(y + 4)" text-anchor="end" class="port-label">@outcome.DisplayName</text>
+    </g>
+  }
+
+  <text x="@(ViewModel.Width - 4)" y="12" text-anchor="end" class="delete-btn"
+        @onclick="() => OnDeleteClicked.InvokeAsync(ViewModel.Node.Id)" @onclick:stopPropagation="true">✕</text>
+</g>
+
+@code {
+  private ElementReference _groupRef;
+  private IJSObjectReference? _dragHandle;
+  private DotNetObjectReference<BlockNode>? _dotNetRef;
+  private bool _dragAttached;
+  private double _attachedAtX;
+  private double _attachedAtY;
+
+  [Parameter, EditorRequired]
+  public NodeViewModel ViewModel { get; set; } = null!;
+
+  [Parameter]
+  public bool IsSelected { get; set; }
+
+  [Parameter]
+  public bool IsStart { get; set; }
+
+  [Parameter]
+  public string? LinkingFromNodeId { get; set; }
+
+  [Parameter]
+  public string? LinkingOutcome { get; set; }
+
+  [Parameter]
+  public IJSObjectReference? JsModule { get; set; }
+
+  [Parameter]
+  public EventCallback<string> OnBodyClicked { get; set; }
+
+  [Parameter]
+  public EventCallback<(string NodeId, string Outcome)> OnOutcomePortClicked { get; set; }
+
+  [Parameter]
+  public EventCallback<string> OnDeleteClicked { get; set; }
+
+  [Parameter]
+  public EventCallback<(string NodeId, double X, double Y)> OnMoved { get; set; }
+
+  private bool IsLinkingFromThisPort(string outcome) =>
+    LinkingFromNodeId == ViewModel.Node.Id && LinkingOutcome == outcome;
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (JsModule is null)
+    {
+      return;
+    }
+
+    if (!_dragAttached)
+    {
+      _dotNetRef = DotNetObjectReference.Create(this);
+      _dragHandle = await JsModule.InvokeAsync<IJSObjectReference>(
+        "makeDraggable", _groupRef, ViewModel.Node.X, ViewModel.Node.Y, _dotNetRef);
+      _attachedAtX = ViewModel.Node.X;
+      _attachedAtY = ViewModel.Node.Y;
+      _dragAttached = true;
+      return;
+    }
+
+    // Position kann sich extern geändert haben (z.B. Undo, AutoLayout) -> JS-Startpunkt synchronisieren.
+    if (_dragHandle is not null && (ViewModel.Node.X != _attachedAtX || ViewModel.Node.Y != _attachedAtY))
+    {
+      _attachedAtX = ViewModel.Node.X;
+      _attachedAtY = ViewModel.Node.Y;
+      await _dragHandle.InvokeVoidAsync("updateOrigin", _attachedAtX, _attachedAtY);
+    }
+  }
+
+  [JSInvokable]
+  public async Task OnDragEnd(double x, double y)
+  {
+    _attachedAtX = x;
+    _attachedAtY = y;
+    await OnMoved.InvokeAsync((ViewModel.Node.Id, x, y));
+  }
+
+  public async ValueTask DisposeAsync()
+  {
+    if (_dragHandle is not null)
+    {
+      try
+      {
+        await _dragHandle.InvokeVoidAsync("dispose");
+        await _dragHandle.DisposeAsync();
+      }
+      catch (JSDisconnectedException)
+      {
+        // Verbindung ist bereits weg (z.B. Seite geschlossen) -> nichts mehr aufzuräumen.
+      }
+    }
+
+    _dotNetRef?.Dispose();
+  }
+}

@@ -82,6 +82,32 @@ public sealed class WorkflowRunner
     NotifyStateChanged();
   }
 
+  /// <summary>
+  /// Wie <see cref="AdvanceAsync"/>, löst den Ziel-Step aber über den benannten Outcome des
+  /// aktuellen Steps auf (siehe <see cref="WorkflowStepDefinition.Transitions"/>). Für Pages,
+  /// deren Navigation von der Benutzerinteraktion abhängt (z.B. Buttonauswahl).
+  /// </summary>
+  public Task AdvanceByOutcomeAsync(string outcome)
+  {
+    if (string.IsNullOrWhiteSpace(outcome))
+    {
+      throw new ArgumentException("Outcome darf nicht leer sein.", nameof(outcome));
+    }
+
+    if (IsCompleted)
+    {
+      return Task.CompletedTask;
+    }
+
+    if (CurrentStep is null)
+    {
+      throw new InvalidOperationException("Es gibt keinen aktiven Step.");
+    }
+
+    var targetStep = ResolveOutcome(CurrentStep, outcome);
+    return AdvanceAsync(targetStep);
+  }
+
   public Task GoBackAsync()
   {
     if (_history.Count <= 1)
@@ -118,8 +144,10 @@ public sealed class WorkflowRunner
     var execution = await ExecuteCurrentStepAsync(step);
 
     var nextStep = overrideNextStep
+      ?? ResolveOutcome(step, execution.StepResult?.Outcome)
       ?? execution.ExceptionNextStep
-      ?? execution.StepResult?.NextStep;
+      ?? execution.StepResult?.NextStep
+      ?? step.Next;
 
     if (string.IsNullOrWhiteSpace(nextStep))
     {
@@ -130,6 +158,27 @@ public sealed class WorkflowRunner
     }
 
     SetCurrentStep(nextStep, trackHistory: true);
+  }
+
+  /// <summary>
+  /// Löst einen benannten Outcome über die Transitions des Steps auf. Liefert <c>null</c>,
+  /// wenn kein Outcome vorliegt; wirft, wenn ein Outcome vorliegt, für den keine Transition
+  /// definiert ist (fängt fehlerhaftes JSON früh ab).
+  /// </summary>
+  private static string? ResolveOutcome(WorkflowStepDefinition step, string? outcome)
+  {
+    if (string.IsNullOrWhiteSpace(outcome))
+    {
+      return null;
+    }
+
+    if (!step.Transitions.TryGetValue(outcome, out var targetStep))
+    {
+      throw new InvalidOperationException(
+        $"Step '{step.Name}' hat keine Transition für Outcome '{outcome}' definiert.");
+    }
+
+    return targetStep;
   }
 
   private async Task<(StepResult? StepResult, string? ExceptionNextStep)> ExecuteCurrentStepAsync(WorkflowStepDefinition step)

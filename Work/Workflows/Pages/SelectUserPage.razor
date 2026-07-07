@@ -5,7 +5,6 @@
 @attribute [ConsumesContext("User.Name", typeof(string), Required = false)]
 @attribute [ProducesContext("User.Name", typeof(string))]
 @attribute [ProducesContext("Wizard.Path", typeof(string))]
-@attribute [Outcome("ConfigureRoles", DisplayName = "Rollen konfigurieren")]
 
 <div class="card p-3">
 	<h4>Bestehenden Benutzer auswählen</h4>
@@ -32,6 +31,6 @@
 	{
 		Context.Set("User.Name", _selectedUser);
 		Context.Set("Wizard.Path", "SelectUser");
-		return AdvanceAsync("ConfigureRoles");
+		return AdvanceAsync();
 	}
 }

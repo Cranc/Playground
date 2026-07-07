@@ -1,36 +1,98 @@
 @page "/"
-@using WorkflowEngine.Catalog
-@inject IBlockCatalog Catalog
+@rendermode InteractiveServer
+@using System.Text.RegularExpressions
+@using WorkflowEngine.Editor.Services
+@inject IWorkflowFileService FileService
+@inject NavigationManager Navigation
 
 <PageTitle>Workflow-Editor</PageTitle>
 
-<h1>Baustein-Katalog</h1>
-<p>@Catalog.Blocks.Count Bausteine gefunden.</p>
+<div class="page-header">
+  <h1>Workflows</h1>
+  <DxButton Text="Neues Modul" RenderStyle="ButtonRenderStyle.Primary" Click="OpenNewModuleDialog" />
+</div>
 
-@foreach (var group in Catalog.Blocks.GroupBy(b => b.Category).OrderBy(g => g.Key))
+@{
+  var names = FileService.ListWorkflowNames();
+}
+
+@if (names.Count == 0)
 {
-    <h4>@group.Key</h4>
-    <table class="table table-sm">
-        <thead>
-            <tr>
-                <th>Alias</th>
-                <th>Kind</th>
-                <th>Inputs</th>
-                <th>Outputs</th>
-                <th>Outcomes</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var block in group.OrderBy(b => b.DisplayName))
-            {
-                <tr>
-                    <td>@block.DisplayName (@block.Alias)</td>
-                    <td>@block.Kind</td>
-                    <td>@string.Join(", ", block.Inputs.Select(p => p.Key))</td>
-                    <td>@string.Join(", ", block.Outputs.Select(p => p.Key))</td>
-                    <td>@string.Join(", ", block.Outcomes.Select(o => o.Name))</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+  <p class="empty-hint">Keine Workflow-Konfigurationen gefunden.</p>
+}
+else
+{
+  <div class="workflow-grid">
+    @foreach (var name in names)
+    {
+      <a class="workflow-card" href="@($"/editor/{name}")">
+        <span class="workflow-card-icon">⚙</span>
+        <span class="workflow-card-name">@name</span>
+      </a>
+    }
+  </div>
+}
+
+<p class="catalog-link"><a href="/catalog">Baustein-Katalog ansehen</a></p>
+
+<DxPopup @bind-Visible="_showNewModuleDialog" HeaderText="Neues Modul anlegen" Width="380px"
+         CloseOnEscape="true" CloseOnOutsideClick="true">
+  <div class="new-module-form">
+    <label for="new-module-name">Name des Workflows</label>
+    <DxTextBox @bind-Text="_newModuleName" Id="new-module-name" NullText="z.B. OrderFulfillment" />
+    @if (_newModuleError is not null)
+    {
+      <p class="field-error">@_newModuleError</p>
+    }
+    <div class="new-module-actions">
+      <DxButton Text="Abbrechen" RenderStyle="ButtonRenderStyle.Secondary" Click="CloseNewModuleDialog" />
+      <DxButton Text="Erstellen" RenderStyle="ButtonRenderStyle.Primary" Click="CreateNewModule" />
+    </div>
+  </div>
+</DxPopup>
+
+@code {
+  private static readonly Regex ValidNamePattern = new("^[A-Za-z0-9_-]+$", RegexOptions.Compiled);
+
+  private bool _showNewModuleDialog;
+  private string _newModuleName = string.Empty;
+  private string? _newModuleError;
+
+  private void OpenNewModuleDialog()
+  {
+    _newModuleName = string.Empty;
+    _newModuleError = null;
+    _showNewModuleDialog = true;
+  }
+
+  private void CloseNewModuleDialog()
+  {
+    _showNewModuleDialog = false;
+  }
+
+  private void CreateNewModule()
+  {
+    var name = _newModuleName.Trim();
+
+    if (name.Length == 0)
+    {
+      _newModuleError = "Bitte einen Namen eingeben.";
+      return;
+    }
+
+    if (!ValidNamePattern.IsMatch(name))
+    {
+      _newModuleError = "Nur Buchstaben, Zahlen, '_' und '-' sind erlaubt.";
+      return;
+    }
+
+    if (FileService.ListWorkflowNames().Contains(name, StringComparer.OrdinalIgnoreCase))
+    {
+      _newModuleError = $"Ein Workflow namens '{name}' existiert bereits.";
+      return;
+    }
+
+    _showNewModuleDialog = false;
+    Navigation.NavigateTo($"/editor/{name}");
+  }
 }

@@ -1,0 +1,190 @@
+@namespace WorkflowEngine.Editor.Components.Editor
+@using WorkflowEngine.Catalog
+@using WorkflowEngine.Editor.Model
+
+<div class="property-panel">
+  <h3>Eigenschaften</h3>
+  @if (SelectedNode is null)
+  {
+    <p class="property-panel-hint">Kein Baustein ausgewählt.</p>
+  }
+  else
+  {
+    <div class="property-field">
+      <label>Step-Name</label>
+      <DxTextBox Text="@SelectedNode.Id" ReadOnly="true" />
+    </div>
+
+    <div class="property-field">
+      <label>Start-Step</label>
+      @if (IsStartNode)
+      {
+        <span class="start-indicator">✓ ist Start-Step</span>
+      }
+      else
+      {
+        <DxButton Text="Als Start festlegen" RenderStyle="ButtonRenderStyle.Secondary"
+                  Click="() => OnSetAsStart.InvokeAsync(SelectedNode.Id)" />
+      }
+    </div>
+
+    <div class="property-field">
+      <label>Execute (Action)</label>
+      <DxComboBox TData="BlockDescriptor" TValue="string" Data="ActionBlocks" TextFieldName="@nameof(BlockDescriptor.DisplayName)" ValueFieldName="@nameof(BlockDescriptor.Alias)"
+                  Value="@SelectedNode.ExecuteAlias" ValueChanged="OnExecuteChanged" NullText="(keiner)" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+    </div>
+
+    <div class="property-field">
+      <label>Component (Page)</label>
+      <DxComboBox TData="BlockDescriptor" TValue="string" Data="PageBlocks" TextFieldName="@nameof(BlockDescriptor.DisplayName)" ValueFieldName="@nameof(BlockDescriptor.Alias)"
+                  Value="@SelectedNode.ComponentAlias" ValueChanged="OnComponentChanged" NullText="(keiner)" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+    </div>
+
+    <div class="property-field">
+      <label>Before (Hook-Alias)</label>
+      <DxTextBox Text="@SelectedNode.Before" TextChanged="UpdateBefore" NullText="z.B. CreateUser.InitAttempts" />
+    </div>
+
+    <div class="property-field">
+      <label>After (Hook-Alias)</label>
+      <DxTextBox Text="@SelectedNode.After" TextChanged="UpdateAfter" NullText="z.B. CreateUser.StampLastRun" />
+    </div>
+
+    <div class="property-field">
+      <label>Retry</label>
+      <DxSpinEdit T="int" Value="SelectedNode.Retry" ValueChanged="UpdateRetry" MinValue="0" />
+    </div>
+
+    <div class="property-field">
+      <label>OnException (Hook-Alias)</label>
+      <DxTextBox Text="@SelectedNode.OnException" TextChanged="UpdateOnException" NullText="z.B. Finish.HandleError" />
+    </div>
+
+    <div class="property-field">
+      <label>OnExceptionNextStep</label>
+      <DxComboBox TData="string" TValue="string" Data="OtherNodeIds" Value="@SelectedNode.OnExceptionNextStep" ValueChanged="OnExceptionNextStepChanged"
+                  NullText="(keiner)" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+    </div>
+
+    <p class="property-panel-hint">Hook-Aliase (Before/After/OnException) sind freier Text — sie werden nicht
+      gegen den Baustein-Katalog geprüft, sondern erst zur Laufzeit über die Registry der Anwendung aufgelöst.</p>
+
+    <DxButton Text="Baustein löschen" RenderStyle="ButtonRenderStyle.Danger"
+              Click="() => OnDeleteRequested.InvokeAsync(SelectedNode.Id)" />
+  }
+</div>
+
+@code {
+  [Parameter]
+  public EditorNode? SelectedNode { get; set; }
+
+  [Parameter, EditorRequired]
+  public IBlockCatalog Catalog { get; set; } = null!;
+
+  [Parameter, EditorRequired]
+  public IReadOnlyList<string> AllNodeIds { get; set; } = [];
+
+  [Parameter]
+  public bool IsStartNode { get; set; }
+
+  [Parameter]
+  public EventCallback OnChanged { get; set; }
+
+  [Parameter]
+  public EventCallback<string> OnSetAsStart { get; set; }
+
+  [Parameter]
+  public EventCallback<string> OnDeleteRequested { get; set; }
+
+  private IEnumerable<BlockDescriptor> ActionBlocks =>
+    Catalog.Blocks.Where(b => b.Kind == BlockKind.Action).OrderBy(b => b.DisplayName);
+
+  private IEnumerable<BlockDescriptor> PageBlocks =>
+    Catalog.Blocks.Where(b => b.Kind == BlockKind.Page).OrderBy(b => b.DisplayName);
+
+  private IEnumerable<string> OtherNodeIds =>
+    AllNodeIds.Where(id => id != SelectedNode!.Id);
+
+  private async Task OnExecuteChanged(string? value)
+  {
+    if (SelectedNode is null)
+    {
+      return;
+    }
+
+    SelectedNode.ExecuteAlias = Normalize(value);
+    await OnChanged.InvokeAsync();
+  }
+
+  private async Task OnComponentChanged(string? value)
+  {
+    if (SelectedNode is null)
+    {
+      return;
+    }
+
+    SelectedNode.ComponentAlias = Normalize(value);
+    await OnChanged.InvokeAsync();
+  }
+
+  private async Task OnExceptionNextStepChanged(string? value)
+  {
+    if (SelectedNode is null)
+    {
+      return;
+    }
+
+    SelectedNode.OnExceptionNextStep = Normalize(value);
+    await OnChanged.InvokeAsync();
+  }
+
+  private async Task UpdateBefore(string? value)
+  {
+    if (SelectedNode is null)
+    {
+      return;
+    }
+
+    SelectedNode.Before = Normalize(value);
+    await OnChanged.InvokeAsync();
+  }
+
+  private async Task UpdateAfter(string? value)
+  {
+    if (SelectedNode is null)
+    {
+      return;
+    }
+
+    SelectedNode.After = Normalize(value);
+    await OnChanged.InvokeAsync();
+  }
+
+  private async Task UpdateOnException(string? value)
+  {
+    if (SelectedNode is null)
+    {
+      return;
+    }
+
+    SelectedNode.OnException = Normalize(value);
+    await OnChanged.InvokeAsync();
+  }
+
+  private async Task UpdateRetry(int value)
+  {
+    if (SelectedNode is null)
+    {
+      return;
+    }
+
+    if (value >= 0)
+    {
+      SelectedNode.Retry = value;
+      await OnChanged.InvokeAsync();
+    }
+  }
+
+  private static string? Normalize(string? value) =>
+    string.IsNullOrWhiteSpace(value) ? null : value;
+}

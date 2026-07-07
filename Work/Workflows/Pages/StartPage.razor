@@ -19,12 +19,12 @@
 	private Task SelectExistingAsync()
 	{
 		Context.Set("Wizard.Path", "SelectUser");
-		return AdvanceAsync("SelectUser");
+		return AdvanceViaAsync("SelectUser");
 	}
 
 	private Task CreateNewAsync()
 	{
 		Context.Set("Wizard.Path", "CreateUser");
-		return AdvanceAsync("CreateUser");
+		return AdvanceViaAsync("CreateUser");
 	}
 }

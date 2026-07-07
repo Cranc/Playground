@@ -33,9 +33,9 @@ public sealed class AdvanceStopStep : IWorkflowStep
     if (nextStopIndex < tour.Stops.Count)
     {
       context.Set("Tour.CurrentStopIndex", nextStopIndex);
-      return Task.FromResult(StepResult.Ok("StopArrival"));
+      return Task.FromResult(StepResult.Branch("StopArrival"));
     }
 
-    return Task.FromResult(StepResult.Ok("TourEnd"));
+    return Task.FromResult(StepResult.Branch("TourEnd"));
   }
 }

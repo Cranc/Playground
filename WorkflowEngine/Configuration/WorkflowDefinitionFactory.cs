@@ -79,6 +79,16 @@ public sealed class WorkflowDefinitionFactory
       }
 
       ConfigureException(step, stepModel, registry);
+
+      foreach (var (outcome, targetStep) in stepModel.Transitions)
+      {
+        step.On(outcome, targetStep);
+      }
+
+      if (!string.IsNullOrWhiteSpace(stepModel.Next))
+      {
+        step.Next(stepModel.Next);
+      }
     }
 
     return builder.Build();
