@@ -1,10 +1,17 @@
 using WorkflowEngine;
+using WorkflowEngine.Catalog;
 
 namespace Work.Workflows.DriverTour.Steps;
 
 /// <summary>
 /// Schließt alle Sendungen des aktuellen Stopps gemeinsam ab (Stop-Abschluss).
 /// </summary>
+[WorkflowBlock(DisplayName = "Sendungen sammelabschließen", Category = "Fahrer-Tour", Description = "Schließt alle offenen Sendungen eines Stopps gemeinsam mit demselben Status ab.")]
+[ConsumesContext("Tour", typeof(Tour))]
+[ConsumesContext("Tour.CurrentStopIndex", typeof(int))]
+[ConsumesContext("Stop.BulkStatus", typeof(ShipmentStatus))]
+[ConsumesContext("Stop.BulkSignature", typeof(string), Required = false)]
+[Outcome("StopComplete", DisplayName = "Stopp abschließen")]
 public sealed class CompleteBulkShipmentsStep : IWorkflowStep
 {
   public Task<StepResult> ExecuteAsync(WorkflowContext context)

@@ -5,4 +5,6 @@
     <Build Solution="Debug|*" Project="false" />
   </Project>
   <Project Path="WorkflowEngine/WorkflowEngine.csproj" />
+  <Project Path="WorkflowEngine.Editor/WorkflowEngine.Editor.csproj" />
+  <Project Path="WorkflowEngine.Tests/WorkflowEngine.Tests.csproj" />
 </Solution>

@@ -1,6 +1,12 @@
 @inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
 @using DevExpress.Blazor
 @using Work.Workflows.DriverTour
+@using WorkflowEngine.Catalog
+@attribute [WorkflowBlock(DisplayName = "Ankunft am Stopp", Category = "Fahrer-Tour", Description = "Zeigt die Sendungen des aktuellen Stopps und wählt die Bearbeitungsart.")]
+@attribute [ConsumesContext("Tour", typeof(Tour))]
+@attribute [ConsumesContext("Tour.CurrentStopIndex", typeof(int))]
+@attribute [Outcome("BulkShipmentStatus", DisplayName = "Stop-Abschluss")]
+@attribute [Outcome("ShipmentSelection", DisplayName = "Einzelbearbeitung")]
 
 <div class="card p-3">
 	<h4>Ankunft am Stopp @(_stopIndex + 1) von @_tour.Stops.Count</h4>

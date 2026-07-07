@@ -1,7 +1,15 @@
 using WorkflowEngine;
+using WorkflowEngine.Catalog;
 
 namespace Work.Workflows.Steps;
 
+[WorkflowBlock(DisplayName = "Benutzer anlegen", Category = "User-Wizard", Description = "Legt den Benutzer anhand von Name und E-Mail an.")]
+[ConsumesContext("User.Name", typeof(string))]
+[ConsumesContext("User.Email", typeof(string), Required = false)]
+[ConsumesContext("CreateUser.Attempts", typeof(int), Required = false)]
+[ProducesContext("CreateUser.Attempts", typeof(int))]
+[ProducesContext("User.Created", typeof(object))]
+[Outcome("ConfigureRoles", DisplayName = "Rollen konfigurieren")]
 public sealed class CreateUserStep : IWorkflowStep
 {
   public Task<StepResult> ExecuteAsync(WorkflowContext context)

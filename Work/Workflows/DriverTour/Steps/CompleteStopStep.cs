@@ -1,4 +1,5 @@
 using WorkflowEngine;
+using WorkflowEngine.Catalog;
 
 namespace Work.Workflows.DriverTour.Steps;
 
@@ -6,6 +7,10 @@ namespace Work.Workflows.DriverTour.Steps;
 /// Markiert den aktuellen Stopp als abgeschlossen, sobald alle Sendungen bearbeitet wurden.
 /// Danach folgt automatisch die Lademittelbuchung.
 /// </summary>
+[WorkflowBlock(DisplayName = "Stopp als abgeschlossen markieren", Category = "Fahrer-Tour", Description = "Markiert den aktuellen Stopp als abgeschlossen.")]
+[ConsumesContext("Tour", typeof(Tour))]
+[ConsumesContext("Tour.CurrentStopIndex", typeof(int))]
+[Outcome("LoadCarrierBooking", DisplayName = "Zur Lademittelbuchung")]
 public sealed class CompleteStopStep : IWorkflowStep
 {
   public Task<StepResult> ExecuteAsync(WorkflowContext context)

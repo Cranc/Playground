@@ -3,7 +3,7 @@ using WorkflowEngine.Execution;
 
 namespace WorkflowEngine.Blazor.Components;
 
-public abstract class WorkflowStepComponent : ComponentBase
+public abstract class WorkflowStepComponent : ComponentBase, IWorkflowPageComponent
 {
   [CascadingParameter]
   protected WorkflowRunner Runner { get; set; } = null!;

@@ -1,3 +1,5 @@
+using WorkflowEngine.Catalog;
+
 namespace WorkflowEngine.Configuration;
 
 /// <summary>
@@ -35,6 +37,30 @@ public sealed class WorkflowTypeRegistry : IWorkflowRegistry
 
     Add(_steps, ResolveAlias(alias, stepType), stepType, "Step");
     return this;
+  }
+
+  /// <summary>Baut eine Registry aus einem <see cref="IBlockCatalog"/>: jeder Baustein wird unter seinem Alias registriert.</summary>
+  public static WorkflowTypeRegistry FromCatalog(IBlockCatalog catalog)
+  {
+    if (catalog is null)
+    {
+      throw new ArgumentNullException(nameof(catalog));
+    }
+
+    var registry = new WorkflowTypeRegistry();
+    foreach (var block in catalog.Blocks)
+    {
+      if (block.Kind == BlockKind.Action)
+      {
+        registry.RegisterStep(block.ImplementationType, block.Alias);
+      }
+      else
+      {
+        registry.RegisterComponent(block.ImplementationType, block.Alias);
+      }
+    }
+
+    return registry;
   }
 
   /// <summary>Registriert einen Component-Typ. Alias-Default: Klassenname.</summary>

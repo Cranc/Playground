@@ -1,5 +1,13 @@
 @inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
 @using DevExpress.Blazor
+@using WorkflowEngine.Catalog
+@attribute [WorkflowBlock(DisplayName = "Summary", Category = "User-Wizard", Description = "Zeigt die Zusammenfassung der bisherigen Eingaben.")]
+@attribute [ConsumesContext("Wizard.Path", typeof(string), Required = false)]
+@attribute [ConsumesContext("User.Name", typeof(string), Required = false)]
+@attribute [ConsumesContext("User.Email", typeof(string), Required = false)]
+@attribute [ConsumesContext("User.Roles", typeof(List<string>), Required = false)]
+@attribute [Outcome("Finish", DisplayName = "Finish")]
+@attribute [Outcome("Advanced", DisplayName = "Advanced")]
 
 <div class="card p-3">
 	<h4>Summary</h4>

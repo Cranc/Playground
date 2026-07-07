@@ -7,7 +7,7 @@ using Work.Workflows.DriverTour.Steps;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDevExpressBlazor();
-builder.Services.AddWorkflowEngine();
+builder.Services.AddWorkflowEngine(typeof(Program).Assembly);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

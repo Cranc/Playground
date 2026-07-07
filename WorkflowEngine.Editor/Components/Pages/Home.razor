@@ -1,0 +1,36 @@
+@page "/"
+@using WorkflowEngine.Catalog
+@inject IBlockCatalog Catalog
+
+<PageTitle>Workflow-Editor</PageTitle>
+
+<h1>Baustein-Katalog</h1>
+<p>@Catalog.Blocks.Count Bausteine gefunden.</p>
+
+@foreach (var group in Catalog.Blocks.GroupBy(b => b.Category).OrderBy(g => g.Key))
+{
+    <h4>@group.Key</h4>
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Alias</th>
+                <th>Kind</th>
+                <th>Inputs</th>
+                <th>Outputs</th>
+                <th>Outcomes</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var block in group.OrderBy(b => b.DisplayName))
+            {
+                <tr>
+                    <td>@block.DisplayName (@block.Alias)</td>
+                    <td>@block.Kind</td>
+                    <td>@string.Join(", ", block.Inputs.Select(p => p.Key))</td>
+                    <td>@string.Join(", ", block.Outputs.Select(p => p.Key))</td>
+                    <td>@string.Join(", ", block.Outcomes.Select(o => o.Name))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

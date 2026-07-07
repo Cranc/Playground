@@ -1,5 +1,11 @@
 @inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
 @using DevExpress.Blazor
+@using WorkflowEngine.Catalog
+@attribute [WorkflowBlock(DisplayName = "Benutzer auswählen", Category = "User-Wizard", Description = "Wählt einen bestehenden Benutzer aus.")]
+@attribute [ConsumesContext("User.Name", typeof(string), Required = false)]
+@attribute [ProducesContext("User.Name", typeof(string))]
+@attribute [ProducesContext("Wizard.Path", typeof(string))]
+@attribute [Outcome("ConfigureRoles", DisplayName = "Rollen konfigurieren")]
 
 <div class="card p-3">
 	<h4>Bestehenden Benutzer auswählen</h4>

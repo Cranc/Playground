@@ -1,5 +1,12 @@
 @inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
 @using DevExpress.Blazor
+@using WorkflowEngine.Catalog
+@attribute [WorkflowBlock(DisplayName = "Advanced Optionen", Category = "User-Wizard", Description = "Zusätzliche Optionen, u.a. Fehler-Simulation für Finish.")]
+@attribute [ConsumesContext("Finish.TriggerError", typeof(bool), Required = false)]
+@attribute [ConsumesContext("Finish.Error", typeof(string), Required = false)]
+@attribute [ProducesContext("Finish.TriggerError", typeof(bool))]
+@attribute [Outcome("Finish", DisplayName = "Finish")]
+@attribute [Outcome("Summary", DisplayName = "Summary")]
 
 <div class="card p-3">
 	<h4>Advanced Optionen</h4>

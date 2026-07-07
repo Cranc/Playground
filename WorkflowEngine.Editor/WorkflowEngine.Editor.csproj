@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WorkflowEngine\WorkflowEngine.csproj" />
+    <ProjectReference Include="..\WorkflowEngine.Blazor\WorkflowEngine.Blazor.csproj" />
+    <!-- Work.csproj bewusst NICHT als ProjectReference: beide Projekte sind eigenständige
+         Web-SDK-Apps, deren statische Framework-Assets (_framework/blazor*.js) beim
+         gemeinsamen Referenzieren kollidieren (SDK-Limitation). Der Baustein-Katalog lädt
+         die Work-Assembly deshalb zur Laufzeit per Reflection (siehe Program.cs), was dem
+         Leitprinzip "Reflection statt Source Generator" ohnehin entspricht. Setzt voraus,
+         dass Work zuvor gebaut wurde. -->
+  </ItemGroup>
+
+</Project>

@@ -1,5 +1,11 @@
 @inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
 @using DevExpress.Blazor
+@using WorkflowEngine.Catalog
+@attribute [WorkflowBlock(DisplayName = "Rollen konfigurieren", Category = "User-Wizard", Description = "Weist dem Benutzer Rollen zu.")]
+@attribute [ConsumesContext("User.Roles", typeof(List<string>), Required = false)]
+@attribute [ProducesContext("User.Roles", typeof(List<string>))]
+@attribute [Outcome("Summary", DisplayName = "Summary")]
+@attribute [Outcome("Advanced", DisplayName = "Advanced")]
 
 <div class="card p-3">
 	<h4>Rollen konfigurieren</h4>

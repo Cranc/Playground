@@ -1,6 +1,11 @@
 @inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
 @using DevExpress.Blazor
 @using Work.Workflows.DriverTour
+@using WorkflowEngine.Catalog
+@attribute [WorkflowBlock(DisplayName = "Lademittelbuchung", Category = "Fahrer-Tour", Description = "Erfasst Lademittel-Zugänge und -Abgänge.")]
+@attribute [ConsumesContext("Tour", typeof(Tour))]
+@attribute [ConsumesContext("Tour.CurrentStopIndex", typeof(int))]
+@attribute [ProducesContext("Stop.PendingLoadCarrierBookings", typeof(List<LoadCarrierBooking>))]
 
 <div class="card p-3">
 	<h4>Lademittelbuchung – @_stop.Name</h4>

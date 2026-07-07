@@ -1,7 +1,14 @@
 using WorkflowEngine;
+using WorkflowEngine.Catalog;
 
 namespace Work.Workflows.Steps;
 
+[WorkflowBlock(DisplayName = "Wizard abschließen", Category = "User-Wizard", Description = "Erstellt die Zusammenfassung und schließt den Wizard ab.")]
+[ConsumesContext("Finish.TriggerError", typeof(bool), Required = false)]
+[ConsumesContext("User.Roles", typeof(List<string>), Required = false)]
+[ConsumesContext("Wizard.Path", typeof(string), Required = false)]
+[ProducesContext("Wizard.Finished", typeof(bool))]
+[ProducesContext("Wizard.Summary", typeof(object))]
 public sealed class FinishStep : IWorkflowStep
 {
   public Task<StepResult> ExecuteAsync(WorkflowContext context)

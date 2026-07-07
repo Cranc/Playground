@@ -1,4 +1,5 @@
 using WorkflowEngine;
+using WorkflowEngine.Catalog;
 
 namespace Work.Workflows.DriverTour.Steps;
 
@@ -6,6 +7,14 @@ namespace Work.Workflows.DriverTour.Steps;
 /// Schließt die aktuell in Bearbeitung befindliche Einzelsendung ab (Einzelbearbeitung)
 /// und entscheidet, ob weitere Sendungen am Stopp offen sind oder der Stopp abgeschlossen werden kann.
 /// </summary>
+[WorkflowBlock(DisplayName = "Einzelsendung abschließen", Category = "Fahrer-Tour", Description = "Schließt die aktuell bearbeitete Einzelsendung ab.")]
+[ConsumesContext("Tour", typeof(Tour))]
+[ConsumesContext("Tour.CurrentStopIndex", typeof(int))]
+[ConsumesContext("Tour.CurrentShipmentId", typeof(string))]
+[ConsumesContext("Shipment.PendingStatus", typeof(ShipmentStatus))]
+[ConsumesContext("Shipment.PendingSignature", typeof(string), Required = false)]
+[Outcome("StopComplete", DisplayName = "Stopp abschließen")]
+[Outcome("ShipmentSelection", DisplayName = "Weitere Sendungen bearbeiten")]
 public sealed class CompleteShipmentStep : IWorkflowStep
 {
   public Task<StepResult> ExecuteAsync(WorkflowContext context)

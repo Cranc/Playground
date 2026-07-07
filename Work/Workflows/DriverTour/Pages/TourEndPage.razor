@@ -1,6 +1,10 @@
 @inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
 @using DevExpress.Blazor
 @using Work.Workflows.DriverTour
+@using WorkflowEngine.Catalog
+@attribute [WorkflowBlock(DisplayName = "Tourende", Category = "Fahrer-Tour", Description = "Zeigt die Zusammenfassung der abgeschlossenen Tour.")]
+@attribute [ConsumesContext("Tour", typeof(Tour))]
+@attribute [ProducesContext("Tour.CompletedAtUtc", typeof(DateTime))]
 
 <div class="card p-3">
 	<h4>Tourende – @_tour.Name</h4>

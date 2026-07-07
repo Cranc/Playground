@@ -1,6 +1,11 @@
 @inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
 @using DevExpress.Blazor
 @using Work.Workflows.DriverTour
+@using WorkflowEngine.Catalog
+@attribute [WorkflowBlock(DisplayName = "Tourstart", Category = "Fahrer-Tour", Description = "Zeigt die geplante Tour vor dem Start.")]
+@attribute [ProducesContext("Tour", typeof(Tour))]
+@attribute [ProducesContext("Tour.CurrentStopIndex", typeof(int))]
+@attribute [Outcome("StopArrival", DisplayName = "Tour starten")]
 
 <div class="card p-3">
 	<h4>Tourstart</h4>

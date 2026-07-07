@@ -1,4 +1,5 @@
 using WorkflowEngine;
+using WorkflowEngine.Catalog;
 
 namespace Work.Workflows.DriverTour.Steps;
 
@@ -7,6 +8,10 @@ namespace Work.Workflows.DriverTour.Steps;
 /// Kontext vorhanden sind, und springt direkt zum ersten Stopp. Läuft automatisch ohne
 /// eigene UI, da die "Tour starten"-Ansicht bereits außerhalb des Workflows (Popup-Trigger) liegt.
 /// </summary>
+[WorkflowBlock(DisplayName = "Tour initialisieren", Category = "Fahrer-Tour", Description = "Erzeugt die Tourdaten, falls noch keine vorhanden sind.")]
+[ProducesContext("Tour", typeof(Tour))]
+[ProducesContext("Tour.CurrentStopIndex", typeof(int))]
+[Outcome("StopArrival", DisplayName = "Zum ersten Stopp")]
 public sealed class InitializeTourStep : IWorkflowStep
 {
   public Task<StepResult> ExecuteAsync(WorkflowContext context)

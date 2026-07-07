@@ -1,6 +1,14 @@
 @inherits WorkflowEngine.Blazor.Components.WorkflowStepComponent
 @using DevExpress.Blazor
 @using Work.Workflows.DriverTour
+@using WorkflowEngine.Catalog
+@attribute [WorkflowBlock(DisplayName = "Sendungsstatus erfassen", Category = "Fahrer-Tour", Description = "Erfasst den Bearbeitungsstatus einer Einzelsendung.")]
+@attribute [ConsumesContext("Tour", typeof(Tour))]
+@attribute [ConsumesContext("Tour.CurrentStopIndex", typeof(int))]
+@attribute [ConsumesContext("Tour.CurrentShipmentId", typeof(string))]
+@attribute [ProducesContext("Shipment.PendingStatus", typeof(ShipmentStatus))]
+@attribute [Outcome("Signature", DisplayName = "Unterschrift erforderlich")]
+@attribute [Outcome("CompleteShipment", DisplayName = "Sendung abschließen")]
 
 @if (_ready)
 {
